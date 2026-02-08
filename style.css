@@ -1,0 +1,67 @@
+/* Tudo o que estava dentro da tag <style> */
+body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+    font-family: 'Georgia', serif;
+    background-color: #000;
+    background-image: 
+        radial-gradient(white, rgba(255,255,255,.2) 2px, transparent 40px),
+        radial-gradient(white, rgba(255,255,255,.15) 1px, transparent 30px),
+        radial-gradient(white, rgba(255,255,255,.1) 2px, transparent 40px);
+    background-size: 550px 550px, 350px 350px, 250px 250px;
+    animation: moveStars 60s linear infinite;
+}
+
+@keyframes moveStars {
+    from { background-position: 0 0, 0 0, 0 0; }
+    to { background-position: 1000px 500px, 400px 400px, 300px 300px; }
+}
+
+#intro-screen {
+    position: absolute;
+    width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center;
+    z-index: 10;
+}
+
+#name-luis {
+    font-size: 100px; color: #ffcc00;
+    text-shadow: 0 0 20px rgba(255, 204, 0, 0.4);
+    letter-spacing: 15px; opacity: 0; font-weight: bold;
+}
+
+#naruto {
+    position: absolute; width: 60px; height: 60px;
+    background: url('https://media.giphy.com/media/JRlqObl9TqK3VCZy8f/giphy.gif'); 
+    background-size: contain; background-repeat: no-repeat;
+    visibility: hidden;
+}
+
+svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+#arcPath { fill: none; stroke: rgba(255, 255, 255, 0.4); stroke-width: 2; stroke-dasharray: 1000; stroke-dashoffset: 1000; }
+
+#movie-screen {
+    opacity: 0; display: none; flex-direction: column;
+    align-items: center; z-index: 5; width: 100%; height: 100vh;
+    justify-content: center;
+}
+
+.gallery-container { position: relative; width: 300px; height: 450px; cursor: pointer; }
+
+.movie-card {
+    position: absolute; width: 100%; height: 100%;
+    border-radius: 20px; background-size: cover; background-position: center;
+    border: 2px solid rgba(255, 255, 255, 0.1); box-shadow: 0 0 40px rgba(0,0,0,1);
+}
+
+.glow {
+    position: absolute; width: 110%; height: 110%; top: -5%; left: -5%;
+    filter: blur(50px); opacity: 0.6; border-radius: 30px;
+}
+
+.info { margin-top: 30px; text-align: center; color: white; font-family: sans-serif; }
+h2 { margin: 0; text-transform: uppercase; letter-spacing: 2px; }
