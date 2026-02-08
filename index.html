@@ -2,55 +2,82 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Melhores Filmes - Cinema Preview</title>
+    <title>Top Filmes & Séries</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <style>
         body {
             margin: 0;
-            background: #050505;
-            color: white;
-            font-family: 'Inter', sans-serif;
+            height: 100vh;
             display: flex;
             justify-content: center;
             align-items: center;
-            height: 100vh;
             overflow: hidden;
+            font-family: 'Arial Black', sans-serif;
+            background: linear-gradient(45deg, #050505, #1a0b2e, #050505);
+            background-size: 400% 400%;
+            animation: gradientBG 10s ease infinite;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
         }
 
         .gallery-container {
             position: relative;
-            width: 300px;
-            height: 450px;
+            width: 320px;
+            height: 480px;
             cursor: pointer;
-            perspective: 1000px;
+            visibility: hidden;
         }
 
         .movie-card {
             position: absolute;
             width: 100%;
             height: 100%;
-            border-radius: 15px;
+            border-radius: 20px;
             background-size: cover;
             background-position: center;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
-            border: 1px solid rgba(255,255,255,0.1);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            z-index: 2;
+        }
+
+        .glow {
+            position: absolute;
+            width: 110%;
+            height: 110%;
+            top: -5%;
+            left: -5%;
+            filter: blur(40px);
+            opacity: 0.6;
+            z-index: 1;
+            border-radius: 30px;
+            transition: background 0.5s;
         }
 
         .info {
             position: absolute;
-            bottom: -60px;
+            bottom: -100px;
             width: 100%;
             text-align: center;
-            transition: 0.3s;
+            color: white;
         }
 
-        h2 { margin: 0; font-size: 1.5rem; text-shadow: 2px 2px 10px rgba(0,0,0,0.8); }
-        p { color: #aaa; margin: 5px 0; }
+        h2 { 
+            margin: 0; 
+            font-size: 1.5rem; 
+            text-transform: uppercase;
+            text-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+
+        p { color: #eee; font-size: 0.9rem; opacity: 0.7; }
     </style>
 </head>
 <body>
 
-    <div class="gallery-container" onclick="nextMovie()">
+    <div class="gallery-container" id="gallery" onclick="nextMovie()">
+        <div class="glow" id="glow"></div>
         <div id="card" class="movie-card"></div>
         <div class="info">
             <h2 id="title">Carregando...</h2>
@@ -59,36 +86,60 @@
     </div>
 
     <script>
-        // Lista de filmes (Aqui você coloca as fotos que quiser)
         const movies = [
-            { title: "Duna: Parte Dois", img: "https://cinepop.com.br/wp-content/uploads/2024/01/duna-parte-02-1.jpg", year: "2024" },
-            { title: "strager thigs", img: "https://images8.alphacoders.com/140/thumb-1920-1403092.jpg", year: "2025" }, // Exemplo de link
-            { title: "homen aranha através do aranhaverso", img: "https://www.querofilme.com.br/images/b/152-homem-aranha-atraves-do-aranhaverso.jpg", year: "2026" }
+            { 
+                title: "Duna: Parte Dois", 
+                img: "https://tse4.mm.bing.net/th/id/OIP.Gylk5ZS9PLdGF3fgYHK33wHaK-?pid=Api&P=0&h=220g", 
+                color: "#ff8c00", 
+                year: "2024" 
+            },
+            { 
+                title: "Stranger Things", 
+                img: "https://d2cdo4blch85n8.cloudfront.net/wp-content/uploads/2025/11/Netflixs-Stranger-Things-5-Official-Poster-691x1024.jpg", 
+                color: "#ff0000", 
+                year: "Série - Netflix" 
+            },
+            { 
+                title: "Aranhaverso", 
+                img: "https://www.querofilme.com.br/images/b/152-homem-aranha-atraves-do-aranhaverso.jpg", 
+                color: "#00d2ff", 
+                year: "2023" 
+            }
         ];
 
         let index = 0;
+        const gallery = document.getElementById('gallery');
         const card = document.getElementById('card');
+        const glow = document.getElementById('glow');
         const title = document.getElementById('title');
+
+        window.onload = () => {
+            gallery.style.visibility = "visible";
+            gsap.from(gallery, {
+                duration: 1.2,
+                y: 50,
+                opacity: 0,
+                ease: "power4.out"
+            });
+            updateMovie();
+        };
 
         function updateMovie() {
             const movie = movies[index];
             
-            // Animação de Saída
-            gsap.to(card, {
-                duration: 0.4,
-                scale: 1.1,
+            gsap.to([card, glow], {
+                duration: 0.3,
+                scale: 0.9,
                 opacity: 0,
-                ease: "power2.in",
                 onComplete: () => {
-                    // Troca a imagem e os textos
                     card.style.backgroundImage = `url('${movie.img}')`;
                     title.innerText = movie.title;
                     document.getElementById('year').innerText = movie.year;
+                    glow.style.backgroundColor = movie.color;
 
-                    // Animação de Entrada
-                    gsap.fromTo(card, 
-                        { scale: 0.8, opacity: 0, x: 50 }, 
-                        { scale: 1, opacity: 1, x: 0, duration: 0.6, ease: "back.out(1.7)" }
+                    gsap.fromTo([card, glow], 
+                        { scale: 1.2, opacity: 0 }, 
+                        { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.7)" }
                     );
                 }
             });
@@ -98,9 +149,6 @@
             index = (index + 1) % movies.length;
             updateMovie();
         }
-
-        // Iniciar o primeiro filme
-        updateMovie();
     </script>
 </body>
 </html>
