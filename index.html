@@ -2,34 +2,73 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Top Filmes & Séries</title>
+    <title>Luis - Cine Shinobi</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
     <style>
         body {
             margin: 0;
             height: 100vh;
+            background: #000;
             display: flex;
             justify-content: center;
             align-items: center;
             overflow: hidden;
-            font-family: 'Arial Black', sans-serif;
-            background: linear-gradient(45deg, #050505, #1a0b2e, #050505);
-            background-size: 400% 400%;
-            animation: gradientBG 10s ease infinite;
+            font-family: 'Georgia', serif;
         }
 
-        @keyframes gradientBG {
-            0% { background-position: 0% 50%; }
-            50% { background-position: 100% 50%; }
-            100% { background-position: 0% 50%; }
+        /* --- ESTILOS DA INTRO --- */
+        #intro-screen {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            background: radial-gradient(circle, #001d3d, #000);
+        }
+
+        #name-luis {
+            font-size: 100px;
+            color: #ffcc00;
+            text-shadow: 0 0 20px rgba(255, 204, 0, 0.4);
+            letter-spacing: 15px;
+            opacity: 0;
+            font-weight: bold;
+        }
+
+        #naruto {
+            position: absolute;
+            width: 70px;
+            height: 70px;
+            background: url('https://media.giphy.com/media/JRlqObl9TqK3VCZy8f/giphy.gif'); 
+            background-size: contain;
+            background-repeat: no-repeat;
+            visibility: hidden;
+        }
+
+        svg { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+        #arcPath { fill: none; stroke: rgba(255, 255, 255, 0.6); stroke-width: 3; stroke-dasharray: 1000; stroke-dashoffset: 1000; }
+
+        /* --- ESTILOS DOS FILMES --- */
+        #movie-screen {
+            opacity: 0;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            z-index: 5;
+            width: 100%;
+            height: 100vh;
+            justify-content: center;
+            background: linear-gradient(45deg, #0f0c29, #302b63, #24243e);
         }
 
         .gallery-container {
             position: relative;
-            width: 320px;
-            height: 480px;
+            width: 300px;
+            height: 450px;
             cursor: pointer;
-            visibility: hidden;
         }
 
         .movie-card {
@@ -40,109 +79,81 @@
             background-size: cover;
             background-position: center;
             border: 2px solid rgba(255, 255, 255, 0.1);
-            z-index: 2;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
         }
 
         .glow {
             position: absolute;
-            width: 110%;
-            height: 110%;
-            top: -5%;
-            left: -5%;
-            filter: blur(40px);
-            opacity: 0.6;
-            z-index: 1;
-            border-radius: 30px;
-            transition: background 0.5s;
+            width: 110%; height: 110%; top: -5%; left: -5%;
+            filter: blur(40px); opacity: 0.5; border-radius: 30px;
         }
 
-        .info {
-            position: absolute;
-            bottom: -100px;
-            width: 100%;
-            text-align: center;
-            color: white;
-        }
-
-        h2 { 
-            margin: 0; 
-            font-size: 1.5rem; 
-            text-transform: uppercase;
-            text-shadow: 0 0 20px rgba(0,0,0,0.5);
-        }
-
-        p { color: #eee; font-size: 0.9rem; opacity: 0.7; }
+        .info { margin-top: 20px; text-align: center; color: white; font-family: sans-serif; }
+        h2 { margin: 0; text-transform: uppercase; letter-spacing: 2px; }
     </style>
 </head>
 <body>
 
-    <div class="gallery-container" id="gallery" onclick="nextMovie()">
-        <div class="glow" id="glow"></div>
-        <div id="card" class="movie-card"></div>
+    <div id="intro-screen">
+        <svg viewBox="0 0 800 400">
+            <path id="arcPath" d="M 100 350 Q 400 -100 700 350" />
+        </svg>
+        <div id="naruto"></div>
+        <div id="name-luis">LUIS</div>
+    </div>
+
+    <div id="movie-screen">
+        <div class="gallery-container" onclick="nextMovie()">
+            <div id="glow" class="glow"></div>
+            <div id="card" class="movie-card"></div>
+        </div>
         <div class="info">
-            <h2 id="title">Carregando...</h2>
-            <p id="year">2026</p>
+            <h2 id="title">Título</h2>
+            <p id="year">Ano</p>
         </div>
     </div>
 
     <script>
+        gsap.registerPlugin(MotionPathPlugin);
+
         const movies = [
-            { 
-                title: "Duna: Parte Dois", 
-                img: "https://tse4.mm.bing.net/th/id/OIP.Gylk5ZS9PLdGF3fgYHK33wHaK-?pid=Api&P=0&h=220g", 
-                color: "#ff8c00", 
-                year: "2024" 
-            },
-            { 
-                title: "Stranger Things", 
-                img: "https://d2cdo4blch85n8.cloudfront.net/wp-content/uploads/2025/11/Netflixs-Stranger-Things-5-Official-Poster-691x1024.jpg", 
-                color: "#ff0000", 
-                year: "Série - Netflix" 
-            },
-            { 
-                title: "Aranhaverso", 
-                img: "https://www.querofilme.com.br/images/b/152-homem-aranha-atraves-do-aranhaverso.jpg", 
-                color: "#00d2ff", 
-                year: "2023" 
-            }
+            { title: "Duna: Parte Dois", img: "https://www.themoviedb.org/t/p/w500/66Y9HbtYp6S99896Z9pS9m7860.jpg", color: "#ff8c00", year: "2024" },
+            { title: "Stranger Things", img: "https://www.themoviedb.org/t/p/w500/49WJfev0moxm9z8A76Ex6Y9GXpP.jpg", color: "#ff0000", year: "Série" },
+            { title: "Aranhaverso", img: "https://www.themoviedb.org/t/p/w500/87mS7v68XlXp098670m865867.jpg", color: "#00d2ff", year: "2023" }
         ];
 
         let index = 0;
-        const gallery = document.getElementById('gallery');
-        const card = document.getElementById('card');
-        const glow = document.getElementById('glow');
-        const title = document.getElementById('title');
+        const mainTl = gsap.timeline();
 
-        window.onload = () => {
-            gallery.style.visibility = "visible";
-            gsap.from(gallery, {
-                duration: 1.2,
-                y: 50,
-                opacity: 0,
-                ease: "power4.out"
-            });
-            updateMovie();
-        };
+        // SEQUÊNCIA DA INTRO
+        mainTl.to("#name-luis", { opacity: 1, duration: 1.5 })
+              .set("#naruto", { visibility: "visible" })
+              .to("#naruto", { duration: 2, ease: "none", motionPath: { path: "#arcPath", align: "#arcPath", alignOrigin: [0.5, 0.5] } }, "-=0.5")
+              .to("#arcPath", { strokeDashoffset: 0, duration: 2, ease: "none" }, "-=2")
+              .to("#naruto", { x: 70, y: -20, rotation: 720, duration: 0.8, ease: "back.out(2)" })
+              .to("#name-luis", { scale: 1.1, color: "#fff", duration: 0.2 })
+              .to("#name-luis", { scale: 1, color: "#ffcc00", duration: 0.3 })
+              
+              // TRANSIÇÃO PARA OS FILMES
+              .to("#intro-screen", { opacity: 0, duration: 1, delay: 1, onComplete: () => {
+                  document.getElementById("intro-screen").style.display = "none";
+                  document.getElementById("movie-screen").style.display = "flex";
+                  updateMovie();
+              }})
+              .to("#movie-screen", { opacity: 1, duration: 1 });
 
         function updateMovie() {
             const movie = movies[index];
+            const card = document.getElementById('card');
+            const glow = document.getElementById('glow');
             
-            gsap.to([card, glow], {
-                duration: 0.3,
-                scale: 0.9,
-                opacity: 0,
-                onComplete: () => {
-                    card.style.backgroundImage = `url('${movie.img}')`;
-                    title.innerText = movie.title;
-                    document.getElementById('year').innerText = movie.year;
-                    glow.style.backgroundColor = movie.color;
-
-                    gsap.fromTo([card, glow], 
-                        { scale: 1.2, opacity: 0 }, 
-                        { scale: 1, opacity: 1, duration: 0.6, ease: "back.out(1.7)" }
-                    );
-                }
-            });
+            gsap.to([card, glow], { duration: 0.3, opacity: 0, scale: 0.8, onComplete: () => {
+                card.style.backgroundImage = `url('${movie.img}')`;
+                glow.style.backgroundColor = movie.color;
+                document.getElementById('title').innerText = movie.title;
+                document.getElementById('year').innerText = movie.year;
+                gsap.fromTo([card, glow], { opacity: 0, scale: 1.2 }, { opacity: 1, scale: 1, duration: 0.6, ease: "back.out" });
+            }});
         }
 
         function nextMovie() {
