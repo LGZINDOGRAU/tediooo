@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cine Shinobi | Luis Edition</title>
+    <title>Cine Shinobi | Ultimate Luis</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
@@ -13,7 +13,6 @@
         :root {
             --primary: #ffcc00;
             --bg: #050505;
-            --glass: rgba(255, 255, 255, 0.05);
         }
 
         body, html {
@@ -23,142 +22,76 @@
             color: white; overflow: hidden;
         }
 
-        /* --- TELA DE LOGIN (CORTE) --- */
+        /* --- SISTEMA DE LOGIN --- */
         #login-wrapper {
-            position: fixed;
-            inset: 0;
-            z-index: 1000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            position: fixed; inset: 0; z-index: 2000;
+            display: flex; justify-content: center; align-items: center;
         }
 
-        /* Divisão da tela para o efeito de corte */
         .login-part {
-            position: absolute;
-            width: 100%;
-            height: 50%;
-            background: #0a0a0a;
-            z-index: -1;
-            transition: transform 0.8s ease-in-out;
+            position: absolute; width: 100%; height: 50%;
+            background: #0a0a0a; z-index: -1;
         }
         .top-part { top: 0; border-bottom: 1px solid #222; }
         .bottom-part { bottom: 0; border-top: 1px solid #222; }
 
         .login-box {
-            background: var(--glass);
+            background: rgba(255, 255, 255, 0.05);
             backdrop-filter: blur(20px);
-            padding: 40px;
-            border-radius: 20px;
+            padding: 40px; border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.1);
-            text-align: center;
-            width: 320px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
-        }
-
-        .login-box h2 {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 3rem;
-            color: var(--primary);
-            margin: 0 0 20px 0;
-            letter-spacing: 3px;
+            text-align: center; width: 320px;
         }
 
         input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            background: rgba(255,255,255,0.08);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 8px;
-            color: white;
-            outline: none;
-            transition: 0.3s;
+            width: 100%; padding: 12px; margin: 10px 0;
+            background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px; color: white; outline: none; box-sizing: border-box;
         }
 
-        input:focus { border-color: var(--primary); background: rgba(255,255,255,0.15); }
-
         button {
-            width: 100%;
-            padding: 14px;
-            margin-top: 15px;
-            background: var(--primary);
-            border: none;
-            border-radius: 8px;
-            font-weight: 700;
-            cursor: pointer;
-            letter-spacing: 1px;
+            width: 100%; padding: 14px; margin-top: 15px;
+            background: var(--primary); border: none; border-radius: 8px;
+            font-weight: 700; cursor: pointer;
+        }
+
+        /* --- INTRO SHINOBI (PÓS LOGIN) --- */
+        #intro-screen {
+            position: fixed; inset: 0; z-index: 1500;
+            background: #000; display: none;
+            justify-content: center; align-items: center;
+        }
+
+        #name-luis {
+            font-size: clamp(60px, 12vw, 120px);
+            font-family: 'Bebas Neue', sans-serif;
+            color: var(--primary); letter-spacing: 20px;
+            opacity: 0; transform: scale(0.5);
+        }
+
+        #smoke-effect {
+            position: absolute; width: 300px; height: 300px;
+            background: radial-gradient(circle, rgba(255,204,0,0.4) 0%, transparent 70%);
+            border-radius: 50%; filter: blur(40px); opacity: 0;
         }
 
         #kunai-anim {
-            position: absolute;
-            width: 60px;
-            height: 60px;
+            position: absolute; width: 60px; height: 60px;
             background: url('https://cdn-icons-png.flaticon.com/512/1088/1088537.png') center/contain no-repeat;
-            opacity: 0;
-            z-index: 1100;
-            pointer-events: none;
+            opacity: 0; z-index: 2100; pointer-events: none;
         }
 
-        /* --- CONTEÚDO PRINCIPAL --- */
+        /* --- APP PRINCIPAL --- */
         #main-app {
-            display: none;
-            opacity: 0;
-            height: 100vh;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background: radial-gradient(circle at center, #111 0%, #000 100%);
+            display: none; opacity: 0; height: 100vh;
+            flex-direction: column; justify-content: center; align-items: center;
         }
 
-        #welcome-msg {
-            font-family: 'Bebas Neue', sans-serif;
-            font-size: 1.5rem;
-            color: var(--primary);
-            margin-bottom: 5px;
-            letter-spacing: 4px;
-        }
-
-        .gallery-container {
-            position: relative;
-            width: 320px;
-            height: 480px;
-            cursor: pointer;
-            perspective: 1000px;
-        }
-
-        .movie-card {
-            width: 100%; height: 100%;
-            border-radius: 20px;
-            background-size: cover;
-            background-position: center;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.9);
-            border: 1px solid rgba(255,255,255,0.1);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .movie-card::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 60%);
-        }
-
-        .glow {
-            position: absolute;
-            inset: -20px;
-            filter: blur(60px);
-            opacity: 0.4;
-            z-index: -1;
-            border-radius: 20px;
-        }
-
+        .gallery-container { width: 320px; height: 480px; cursor: pointer; perspective: 1000px; }
+        .movie-card { width: 100%; height: 100%; border-radius: 20px; background-size: cover; background-position: center; border: 1px solid rgba(255,255,255,0.1); }
         .info { text-align: center; margin-top: 30px; }
-        .info h3 { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; margin: 0; color: var(--primary); }
-        .info p { margin: 0; opacity: 0.6; font-weight: 300; letter-spacing: 2px; }
+        h3 { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; color: var(--primary); margin: 0; }
 
-        /* SVG Invisível para o caminho da Kunai */
         #path-svg { position: absolute; width: 0; height: 0; }
     </style>
 </head>
@@ -167,48 +100,41 @@
     <div id="login-wrapper">
         <div class="login-part top-part"></div>
         <div class="login-part bottom-part"></div>
-        
         <div id="kunai-anim"></div>
-        
         <div class="login-box" id="box">
-            <h2>LOGIN NINJA</h2>
+            <h2 style="font-family: 'Bebas Neue'; font-size: 2.5rem; color: var(--primary);">ACESSO RESTRITO</h2>
             <input type="text" id="user" placeholder="Usuário">
-            <input type="password" id="pass" placeholder="Senha Secreta">
-            <button onclick="tentarLogin()">LIBERAR ACESSO</button>
+            <input type="password" id="pass" placeholder="Senha">
+            <button onclick="tentarLogin()">ENTRAR NO CINE</button>
         </div>
     </div>
 
-    <svg id="path-svg" viewBox="0 0 800 400">
-        <path id="slashPath" d="M -100 200 L 900 200" fill="none"/>
-    </svg>
+    <div id="intro-screen">
+        <div id="smoke-effect"></div>
+        <h1 id="name-luis">LUIS</h1>
+    </div>
+
+    <svg id="path-svg" viewBox="0 0 800 400"><path id="slashPath" d="M -100 200 L 900 200" fill="none"/></svg>
 
     <main id="main-app">
-        <div id="welcome-msg">BEM-VINDO, HOKAGE</div>
         <div class="gallery-container" onclick="nextMovie()">
-            <div id="glow" class="glow"></div>
             <div id="card" class="movie-card"></div>
         </div>
         <div class="info">
-            <p id="year">2024</p>
             <h3 id="title">FILME</h3>
+            <p id="year">ANO</p>
         </div>
     </main>
 
     <script>
         gsap.registerPlugin(MotionPathPlugin);
 
-        // --- CONFIGURAÇÃO ---
-        const CONFIG = {
-            user: "manugotíca",
-            pass: "luislindo" // Mude sua senha aqui!
-        };
+        const CONFIG = { user: "luis", pass: "123" }; // AQUI VOCÊ MUDA A SENHA
 
         const movies = [
-            { title: "Duna: Parte Dois", img: "https://www.beautifulballad.org/wp-content/uploads/2024/01/dune-part-two-DUNE2_VERT_MAIN_2764x4096_DOM_REV_rgb.jpg", color: "#ff8c00", year: "2024 | SCI-FI" },
-            { title: "Spider-Man", img: "https://image.tmdb.org/t/p/original/xxPXsL8V95dTwL5vHWIIQALkJQS.jpg", color: "#00d2ff", year: "2023 | ANIMAÇÃO" },
-            { title: "The Batman", img: "https://m.media-amazon.com/images/I/71m6N9GVOBL._AC_UF894,1000_QL80_.jpg", color: "#ff0000", year: "2022 | AÇÃO" }
+            { title: "Duna 2", img: "https://www.beautifulballad.org/wp-content/uploads/2024/01/dune-part-two-DUNE2_VERT_MAIN_2764x4096_DOM_REV_rgb.jpg", year: "2024" },
+            { title: "John Wick 4", img: "https://m.media-amazon.com/images/I/81SStYm89fL._AC_UF894,1000_QL80_.jpg", year: "2023" }
         ];
-
         let index = 0;
 
         function tentarLogin() {
@@ -216,73 +142,47 @@
             const p = document.getElementById('pass').value;
 
             if (u === CONFIG.user && p === CONFIG.pass) {
-                executarCorteNinja();
+                sequenciaDeEntrada();
             } else {
-                gsap.to("#box", { x: 10, repeat: 3, yoyo: true, duration: 0.05, onComplete: () => gsap.set("#box", {x:0}) });
-                alert("Senha incorreta, Genin!");
+                gsap.to("#box", { x: 10, repeat: 3, yoyo: true, duration: 0.05 });
             }
         }
 
-        function executarCorteNinja() {
+        function sequenciaDeEntrada() {
             const tl = gsap.timeline();
 
-            // 1. Kunai atravessa cortando
+            // 1. Corte da Kunai
             tl.to("#kunai-anim", { opacity: 1, duration: 0.1 })
-              .to("#kunai-anim", {
-                  duration: 0.5,
-                  motionPath: { path: "#slashPath", autoRotate: true },
-                  ease: "none"
-              })
-              // 2. A caixa de login some e a tela corta
-              .to("#box", { scale: 0, opacity: 0, duration: 0.3 }, "-=0.2")
-              .to(".top-part", { yPercent: -100, duration: 0.8, ease: "expo.inOut" }, "-=0.1")
-              .to(".bottom-part", { yPercent: 100, duration: 0.8, ease: "expo.inOut" }, "-=0.8")
-              // 3. Mostra o App
+              .to("#kunai-anim", { motionPath: { path: "#slashPath" }, duration: 0.4, ease: "none" })
+              .to("#box", { scale: 0, opacity: 0, duration: 0.2 }, "-=0.2")
+              .to(".top-part", { yPercent: -100, duration: 0.6, ease: "power2.inOut" }, "-=0.1")
+              .to(".bottom-part", { yPercent: 100, duration: 0.6, ease: "power2.inOut" }, "-=0.6")
+              
+              // 2. Inicia a Intro do Nome
               .set("#login-wrapper", { display: "none" })
+              .set("#intro-screen", { display: "flex" })
+              .to("#smoke-effect", { opacity: 1, scale: 2, duration: 0.5 })
+              .to("#name-luis", { opacity: 1, scale: 1, letterSpacing: "15px", duration: 1, ease: "expo.out" }, "-=0.3")
+              .to("#intro-screen", { opacity: 0, duration: 1, delay: 1 }) // Saída da intro
+              
+              // 3. Mostra o App
+              .set("#intro-screen", { display: "none" })
               .set("#main-app", { display: "flex" })
               .to("#main-app", { opacity: 1, duration: 1, onComplete: updateMovie });
         }
 
         function updateMovie() {
             const movie = movies[index];
-            const card = document.getElementById('card');
-            const glow = document.getElementById('glow');
-
-            // Animação de entrada do card
-            gsap.fromTo(".gallery-container", 
-                { rotationY: -30, opacity: 0, scale: 0.8 }, 
-                { rotationY: 0, opacity: 1, scale: 1, duration: 0.8, ease: "back.out(1.7)" }
-            );
-
-            card.style.backgroundImage = `url('${movie.img}')`;
-            glow.style.backgroundColor = movie.color;
+            document.getElementById('card').style.backgroundImage = `url('${movie.img}')`;
             document.getElementById('title').innerText = movie.title;
             document.getElementById('year').innerText = movie.year;
-            
-            // Troca o Rank se for você
-            if(document.getElementById('user').value.toLowerCase() === 'luis') {
-                document.getElementById('welcome-msg').innerText = "BEM-VINDO, HOKAGE LUIS";
-            }
+            gsap.fromTo(".gallery-container", { rotationY: -30, opacity: 0 }, { rotationY: 0, opacity: 1, duration: 0.8 });
         }
 
         function nextMovie() {
-            gsap.to(".gallery-container", {
-                opacity: 0, scale: 1.1, duration: 0.4, 
-                onComplete: () => {
-                    index = (index + 1) % movies.length;
-                    updateMovie();
-                }
-            });
+            index = (index + 1) % movies.length;
+            updateMovie();
         }
-
-        // Parallax do mouse nos cards
-        document.addEventListener("mousemove", (e) => {
-            if(document.getElementById('main-app').style.display === "flex") {
-                const x = (window.innerWidth / 2 - e.pageX) / 20;
-                const y = (window.innerHeight / 2 - e.pageY) / 20;
-                gsap.to(".gallery-container", { rotationY: -x, rotationX: y, duration: 1 });
-            }
-        });
     </script>
 </body>
 </html>
