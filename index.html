@@ -3,285 +3,179 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Luis | Cine Shinobi Pro</title>
-    
+    <title>Luis | Cine Shinobi Privado</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
     <style>
         :root {
-            --primary-color: #ffcc00;
-            --bg-dark: #080808;
-            --card-shadow: 0 30px 60px rgba(0,0,0,0.5);
+            --primary: #ffcc00;
+            --bg: #050505;
         }
 
-        body {
-            margin: 0;
-            height: 100vh;
-            background: var(--bg-dark);
-            color: white;
+        body, html {
+            margin: 0; padding: 0;
+            height: 100%; background: var(--bg);
             font-family: 'Poppins', sans-serif;
-            overflow: hidden;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            perspective: 1000px;
+            color: white; overflow: hidden;
         }
 
-        /* --- INTRO SHINOBI --- */
-        #intro-screen {
+        /* --- TELA DE LOGIN --- */
+        #login-overlay {
             position: fixed;
             inset: 0;
+            z-index: 1000;
+            background: linear-gradient(45deg, #000, #1a1a1a);
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 100;
-            background: #000;
+            transition: transform 0.8s cubic-bezier(0.87, 0, 0.13, 1);
         }
 
-        #name-luis {
-            font-size: clamp(60px, 12vw, 120px);
-            font-family: 'Bebas Neue', sans-serif;
-            color: var(--primary-color);
-            letter-spacing: 15px;
-            z-index: 2;
-            text-shadow: 0 0 20px rgba(255, 204, 0, 0.4);
-        }
-
-        #smoke-effect {
-            position: absolute;
-            width: 300px;
-            height: 300px;
-            background: radial-gradient(circle, rgba(255,204,0,0.4) 0%, transparent 70%);
-            border-radius: 50%;
-            filter: blur(40px);
-            transform: scale(0);
-        }
-
-        #naruto-kunai {
-            position: absolute;
-            width: 40px;
-            height: 40px;
-            background: url('https://cdn-icons-png.flaticon.com/512/1088/1088537.png') center/contain no-repeat;
-            opacity: 0;
-        }
-
-        /* --- GALERIA CINEMATOGRÁFICA --- */
-        #movie-screen {
-            display: none;
-            flex-direction: column;
-            align-items: center;
-            width: 100%;
-            max-width: 1200px;
-            opacity: 0;
-        }
-
-        .gallery-wrapper {
-            position: relative;
-            width: 340px;
-            height: 500px;
-            transform-style: preserve-3d;
-            cursor: pointer;
-        }
-
-        .movie-card {
-            position: relative;
-            width: 100%;
-            height: 100%;
+        .login-box {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            padding: 40px;
             border-radius: 20px;
-            background-size: cover;
-            background-position: center;
-            box-shadow: var(--card-shadow);
-            border: 1px solid rgba(255,255,255,0.1);
-            overflow: hidden;
-            z-index: 2;
-        }
-
-        .movie-card::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%);
-        }
-
-        .glow-effect {
-            position: absolute;
-            inset: -20px;
-            filter: blur(50px);
-            opacity: 0.5;
-            z-index: 1;
-            transition: background 0.5s ease;
-            border-radius: 40px;
-        }
-
-        .info-panel {
-            margin-top: 30px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
-            max-width: 80%;
+            width: 300px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
         }
 
-        .info-panel h2 {
+        .login-box h2 {
             font-family: 'Bebas Neue', sans-serif;
-            font-size: 3.5rem;
-            margin: 0;
-            color: var(--primary-color);
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 20px;
             letter-spacing: 2px;
         }
 
-        .info-panel p {
-            font-size: 1rem;
-            text-transform: uppercase;
-            letter-spacing: 4px;
-            color: #aaa;
-            margin-bottom: 10px;
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            background: rgba(255,255,255,0.1);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            outline: none;
+            box-sizing: border-box;
         }
 
-        .nav-hint {
-            margin-top: 20px;
-            font-size: 0.7rem;
-            color: #555;
-            border: 1px solid #333;
-            padding: 5px 15px;
+        button {
+            width: 100%;
+            padding: 12px;
+            margin-top: 15px;
+            background: var(--primary);
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:active { transform: scale(0.95); }
+
+        #error-msg {
+            color: #ff4444;
+            font-size: 0.8rem;
+            margin-top: 10px;
+            display: none;
+        }
+
+        /* --- CONTEÚDO PRINCIPAL (OCULTO INICIALMENTE) --- */
+        #main-content {
+            display: none;
+            height: 100vh;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        /* Reaproveitando estilos do card anterior */
+        .movie-card {
+            width: 300px;
+            height: 450px;
             border-radius: 20px;
+            background-size: cover;
+            background-position: center;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+            border: 1px solid rgba(255,255,255,0.1);
         }
 
-        /* SVG Path escondido */
-        #path-container { position: absolute; width: 0; height: 0; }
+        h1 { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; color: var(--primary); margin-top: 20px; }
     </style>
 </head>
 <body>
 
-    <div id="intro-screen">
-        <div id="smoke-effect"></div>
-        <div id="naruto-kunai"></div>
-        <h1 id="name-luis">LUIS</h1>
-        
-        <svg id="path-container" viewBox="0 0 800 400">
-            <path id="kunaiPath" d="M -100 400 Q 400 -100 900 400" fill="none"/>
-        </svg>
+    <div id="login-overlay">
+        <div class="login-box">
+            <h2>CINE SHINOBI</h2>
+            <input type="text" id="user" placeholder="Usuário Ninja">
+            <input type="password" id="pass" placeholder="Senha Secreta">
+            <button onclick="checkLogin()">ENTRAR</button>
+            <p id="error-msg">Acesso Negado, Genin!</p>
+        </div>
     </div>
 
-    <main id="movie-screen">
-        <div class="gallery-wrapper" onclick="nextMovie()">
-            <div id="glow" class="glow-effect"></div>
-            <div id="card" class="movie-card"></div>
-        </div>
-
-        <div class="info-panel">
-            <p id="year">2024</p>
-            <h2 id="title">CINE SHINOBI</h2>
-            <div class="nav-hint" id="counter">1 / 6 • CLIQUE PARA AVANÇAR</div>
-        </div>
-    </main>
+    <div id="main-content">
+        <div id="card" class="movie-card"></div>
+        <h1 id="title">Carregando...</h1>
+        <p>Clique no card para navegar</p>
+    </div>
 
     <script>
-        gsap.registerPlugin(MotionPathPlugin);
+        // CONFIGURAÇÃO PRIVADA
+        const SEGREDO = {
+            usuario: "luis",
+            senha: "123" // Mude aqui para o que você quiser
+        };
 
         const movies = [
-            { title: "Duna: Parte Dois", img: "https://www.beautifulballad.org/wp-content/uploads/2024/01/dune-part-two-DUNE2_VERT_MAIN_2764x4096_DOM_REV_rgb.jpg", color: "#ff8c00", year: "2024 | FICÇÃO" },
-            { title: "Stranger Things", img: "https://m.media-amazon.com/images/I/719S925qSJL._AC_UF894,1000_QL80_.jpg", color: "#ff0000", year: "SÉRIE | NETFLIX" },
-            { title: "Aranhaverso", img: "https://image.tmdb.org/t/p/original/xxPXsL8V95dTwL5vHWIIQALkJQS.jpg", color: "#00d2ff", year: "2023 | ANIMAÇÃO" },
-            { title: "Oppenheimer", img: "https://m.media-amazon.com/images/I/71lqD7xl62L._AC_UF894,1000_QL80_.jpg", color: "#ff4500", year: "2023 | DRAMA" },
-            { title: "The Batman", img: "https://m.media-amazon.com/images/I/71m6N9GVOBL._AC_UF894,1000_QL80_.jpg", color: "#323232", year: "2022 | AÇÃO" },
-            { title: "John Wick 4", img: "https://m.media-amazon.com/images/I/81SStYm89fL._AC_UF894,1000_QL80_.jpg", color: "#00ffcc", year: "2023 | CRIME" }
+            { title: "Duna 2", img: "https://www.beautifulballad.org/wp-content/uploads/2024/01/dune-part-two-DUNE2_VERT_MAIN_2764x4096_DOM_REV_rgb.jpg" },
+            { title: "Batman", img: "https://m.media-amazon.com/images/I/71m6N9GVOBL._AC_UF894,1000_QL80_.jpg" }
         ];
-
         let index = 0;
-        let isAnimating = false;
 
-        // --- TIMELINE DE ENTRADA ---
-        const tl = gsap.timeline();
+        function checkLogin() {
+            const u = document.getElementById('user').value;
+            const p = document.getElementById('pass').value;
+            const error = document.getElementById('error-msg');
 
-        tl.to("#naruto-kunai", { 
-            opacity: 1, 
-            duration: 0.1 
-        })
-        .to("#naruto-kunai", {
-            duration: 1.2,
-            motionPath: {
-                path: "#kunaiPath",
-                autoRotate: true
-            },
-            ease: "power2.inOut"
-        }, 0)
-        .to("#smoke-effect", { 
-            scale: 2, 
-            opacity: 1, 
-            duration: 0.4, 
-            ease: "expo.out" 
-        }, "-=0.3")
-        .from("#name-luis", { 
-            scale: 0.5, 
-            letterSpacing: "50px", 
-            filter: "blur(20px)", 
-            duration: 1, 
-            ease: "power4.out" 
-        }, "-=0.5")
-        .to("#intro-screen", { 
-            yPercent: -100, 
-            duration: 1, 
-            ease: "expo.inOut", 
-            delay: 0.8 
-        })
-        .set("#movie-screen", { display: "flex" })
-        .to("#movie-screen", { 
-            opacity: 1, 
-            y: 0, 
-            duration: 1, 
-            onComplete: () => updateMovie(true) 
-        }, "-=0.5");
-
-        function updateMovie(isFirst = false) {
-            const movie = movies[index];
-            const card = document.getElementById('card');
-            const glow = document.getElementById('glow');
-            
-            card.style.backgroundImage = `url('${movie.img}')`;
-            glow.style.backgroundColor = movie.color;
-            document.getElementById('title').innerText = movie.title;
-            document.getElementById('year').innerText = movie.year;
-            document.getElementById('counter').innerText = `${index + 1} / ${movies.length} • CLIQUE PARA AVANÇAR`;
-
-            gsap.fromTo(".gallery-wrapper", 
-                { rotationY: 40, z: -200, opacity: 0 },
-                { rotationY: 0, z: 0, opacity: 1, duration: 1, ease: "power4.out" }
-            );
-            
-            gsap.from(".info-panel > *", {
-                y: 20,
-                opacity: 0,
-                stagger: 0.1,
-                duration: 0.8,
-                ease: "power3.out"
-            });
-
-            isAnimating = false;
+            if(u === SEGREDO.usuario && p === SEGREDO.senha) {
+                // Animação de saída do login
+                gsap.to("#login-overlay", { 
+                    y: "-100%", 
+                    duration: 1.2, 
+                    ease: "expo.inOut",
+                    onComplete: () => {
+                        document.getElementById('login-overlay').style.display = 'none';
+                        startSite();
+                    }
+                });
+            } else {
+                error.style.display = 'block';
+                gsap.fromTo(".login-box", { x: -10 }, { x: 10, repeat: 5, yoyo: true, duration: 0.05 });
+            }
         }
 
-        function nextMovie() {
-            if (isAnimating) return;
-            isAnimating = true;
-
-            gsap.to(".gallery-wrapper", {
-                rotationY: -40,
-                z: -200,
-                opacity: 0,
-                duration: 0.6,
-                ease: "power4.in",
-                onComplete: () => {
-                    index = (index + 1) % movies.length;
-                    updateMovie();
-                }
-            });
+        function startSite() {
+            document.getElementById('main-content').style.display = 'flex';
+            updateContent();
+            gsap.from("#main-content", { opacity: 0, scale: 0.8, duration: 1 });
         }
 
-        // Efeito de inclinação suave no mouse (Parallax)
-        document.addEventListener("mousemove", (e) => {
-            const x = (window.innerWidth / 2 - e.pageX) / 25;
-            const y = (window.innerHeight / 2 - e.pageY) / 25;
-            gsap.to(".gallery-wrapper", { rotationY: -x, rotationX: y, duration: 2, ease: "power2.out" });
-        });
+        function updateContent() {
+            const m = movies[index];
+            document.getElementById('card').style.backgroundImage = `url('${m.img}')`;
+            document.getElementById('title').innerText = m.title;
+        }
+
+        document.getElementById('card').onclick = () => {
+            index = (index + 1) % movies.length;
+            gsap.to("#card", { rotationY: "+=180", duration: 0.6, onComplete: updateContent });
+        };
     </script>
 </body>
 </html>
