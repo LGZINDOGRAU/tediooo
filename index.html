@@ -2,225 +2,286 @@
 <html lang="pt-br">
 <head>
     <meta charset="UTF-8">
-    <title>Luis - Cine Shinobi</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Luis | Cine Shinobi Pro</title>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
+
     <style>
+        :root {
+            --primary-color: #ffcc00;
+            --bg-dark: #080808;
+            --card-shadow: 0 30px 60px rgba(0,0,0,0.5);
+        }
+
         body {
             margin: 0;
             height: 100vh;
-            background: #050505;
+            background: var(--bg-dark);
+            color: white;
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden;
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
-            font-family: 'Poppins', sans-serif;
+            perspective: 1000px;
         }
 
-        /* --- INTRO MELHORADA --- */
+        /* --- INTRO SHINOBI --- */
         #intro-screen {
-            position: absolute;
-            width: 100%;
-            height: 100%;
+            position: fixed;
+            inset: 0;
             display: flex;
             justify-content: center;
             align-items: center;
-            z-index: 10;
-            background: radial-gradient(circle, #1a1a1a, #000);
+            z-index: 100;
+            background: #000;
         }
 
         #name-luis {
-            font-size: clamp(80px, 15vw, 150px);
+            font-size: clamp(60px, 12vw, 120px);
             font-family: 'Bebas Neue', sans-serif;
-            color: #ffcc00;
-            letter-spacing: 20px;
-            opacity: 0;
+            color: var(--primary-color);
+            letter-spacing: 15px;
             z-index: 2;
+            text-shadow: 0 0 20px rgba(255, 204, 0, 0.4);
         }
 
         #smoke-effect {
             position: absolute;
-            width: 200px;
-            height: 200px;
-            background: rgba(255,255,255,0.8);
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(255,204,0,0.4) 0%, transparent 70%);
             border-radius: 50%;
-            filter: blur(50px);
-            opacity: 0;
-            z-index: 3;
+            filter: blur(40px);
+            transform: scale(0);
         }
 
-        #naruto {
+        #naruto-kunai {
             position: absolute;
-            width: 60px;
-            height: 60px;
-            background: url('https://cdn-icons-png.flaticon.com/512/1088/1088537.png'); /* Ícone de Kunai/Ninja */
-            background-size: contain;
-            background-repeat: no-repeat;
-            visibility: hidden;
+            width: 40px;
+            height: 40px;
+            background: url('https://cdn-icons-png.flaticon.com/512/1088/1088537.png') center/contain no-repeat;
+            opacity: 0;
         }
 
-        svg { position: absolute; width: 100%; height: 100%; pointer-events: none; }
-        #arcPath { fill: none; stroke: rgba(255, 204, 0, 0.3); stroke-width: 2; stroke-dasharray: 1000; stroke-dashoffset: 1000; }
-
-        /* --- GALERIA DE FILMES --- */
+        /* --- GALERIA CINEMATOGRÁFICA --- */
         #movie-screen {
-            opacity: 0;
             display: none;
             flex-direction: column;
             align-items: center;
             width: 100%;
-            height: 100vh;
-            justify-content: center;
-            background: radial-gradient(circle at center, #1e1e2f 0%, #000 100%);
+            max-width: 1200px;
+            opacity: 0;
         }
 
-        .gallery-container {
+        .gallery-wrapper {
             position: relative;
-            width: 320px;
-            height: 480px;
+            width: 340px;
+            height: 500px;
+            transform-style: preserve-3d;
             cursor: pointer;
-            transition: transform 0.3s ease;
-        }
-
-        .gallery-container:hover {
-            transform: scale(1.05);
         }
 
         .movie-card {
-            position: absolute;
+            position: relative;
             width: 100%;
             height: 100%;
-            border-radius: 15px;
+            border-radius: 20px;
             background-size: cover;
             background-position: center;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            box-shadow: 0 20px 50px rgba(0,0,0,0.8);
+            box-shadow: var(--card-shadow);
+            border: 1px solid rgba(255,255,255,0.1);
+            overflow: hidden;
             z-index: 2;
         }
 
-        .glow {
+        .movie-card::after {
+            content: '';
             position: absolute;
-            width: 100%; height: 100%;
-            filter: blur(60px); opacity: 0.6;
-            border-radius: 15px;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%);
+        }
+
+        .glow-effect {
+            position: absolute;
+            inset: -20px;
+            filter: blur(50px);
+            opacity: 0.5;
             z-index: 1;
+            transition: background 0.5s ease;
+            border-radius: 40px;
         }
 
-        .info { 
-            margin-top: 40px; 
-            text-align: center; 
-            color: white; 
+        .info-panel {
+            margin-top: 30px;
+            text-align: center;
+            max-width: 80%;
         }
 
-        h2 { 
-            margin: 0; 
-            font-family: 'Bebas Neue', sans-serif; 
-            font-size: 3rem; 
-            letter-spacing: 3px;
-            color: #ffcc00;
+        .info-panel h2 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 3.5rem;
+            margin: 0;
+            color: var(--primary-color);
+            letter-spacing: 2px;
         }
 
-        p { margin: 5px 0; opacity: 0.7; font-weight: 300; }
-
-        .counter {
-            margin-top: 15px;
-            font-size: 0.8rem;
-            color: rgba(255,255,255,0.4);
+        .info-panel p {
+            font-size: 1rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            color: #aaa;
+            margin-bottom: 10px;
         }
+
+        .nav-hint {
+            margin-top: 20px;
+            font-size: 0.7rem;
+            color: #555;
+            border: 1px solid #333;
+            padding: 5px 15px;
+            border-radius: 20px;
+        }
+
+        /* SVG Path escondido */
+        #path-container { position: absolute; width: 0; height: 0; }
     </style>
 </head>
 <body>
 
     <div id="intro-screen">
         <div id="smoke-effect"></div>
-        <svg viewBox="0 0 800 400">
-            <path id="arcPath" d="M -50 400 Q 400 -200 850 400" />
+        <div id="naruto-kunai"></div>
+        <h1 id="name-luis">LUIS</h1>
+        
+        <svg id="path-container" viewBox="0 0 800 400">
+            <path id="kunaiPath" d="M -100 400 Q 400 -100 900 400" fill="none"/>
         </svg>
-        <div id="naruto"></div>
-        <div id="name-luis">LUIS</div>
     </div>
 
-    <div id="movie-screen">
-        <div class="gallery-container" onclick="nextMovie()">
-            <div id="glow" class="glow"></div>
+    <main id="movie-screen">
+        <div class="gallery-wrapper" onclick="nextMovie()">
+            <div id="glow" class="glow-effect"></div>
             <div id="card" class="movie-card"></div>
         </div>
-        <div class="info">
-            <h2 id="title">Título</h2>
-            <p id="year">Ano</p>
-            <div class="counter" id="counter">1 / 6</div>
+
+        <div class="info-panel">
+            <p id="year">2024</p>
+            <h2 id="title">CINE SHINOBI</h2>
+            <div class="nav-hint" id="counter">1 / 6 • CLIQUE PARA AVANÇAR</div>
         </div>
-    </div>
+    </main>
 
     <script>
         gsap.registerPlugin(MotionPathPlugin);
 
         const movies = [
-            { title: "Duna: Parte Dois", img: "https://www.beautifulballad.org/wp-content/uploads/2024/01/dune-part-two-DUNE2_VERT_MAIN_2764x4096_DOM_REV_rgb.jpg", color: "#ff8c00", year: "2024 | Ficção Científica" },
-            { title: "Stranger Things", img: "https://m.media-amazon.com/images/I/719S925qSJL._AC_UF894,1000_QL80_.jpg", color: "#ff0000", year: "Série | Netflix" },
-            { title: "Aranhaverso", img: "https://image.tmdb.org/t/p/original/xxPXsL8V95dTwL5vHWIIQALkJQS.jpg", color: "#00d2ff", year: "2023 | Animação" },
-            { title: "Oppenheimer", img: "https://m.media-amazon.com/images/I/71lqD7xl62L._AC_UF894,1000_QL80_.jpg", color: "#ff4500", year: "2023 | Drama" },
-            { title: "The Batman", img: "https://m.media-amazon.com/images/I/71m6N9GVOBL._AC_UF894,1000_QL80_.jpg", color: "#323232", year: "2022 | Ação" },
-            { title: "John Wick 4", img: "https://m.media-amazon.com/images/I/81SStYm89fL._AC_UF894,1000_QL80_.jpg", color: "#00ffcc", year: "2023 | Crime" }
+            { title: "Duna: Parte Dois", img: "https://www.beautifulballad.org/wp-content/uploads/2024/01/dune-part-two-DUNE2_VERT_MAIN_2764x4096_DOM_REV_rgb.jpg", color: "#ff8c00", year: "2024 | FICÇÃO" },
+            { title: "Stranger Things", img: "https://m.media-amazon.com/images/I/719S925qSJL._AC_UF894,1000_QL80_.jpg", color: "#ff0000", year: "SÉRIE | NETFLIX" },
+            { title: "Aranhaverso", img: "https://image.tmdb.org/t/p/original/xxPXsL8V95dTwL5vHWIIQALkJQS.jpg", color: "#00d2ff", year: "2023 | ANIMAÇÃO" },
+            { title: "Oppenheimer", img: "https://m.media-amazon.com/images/I/71lqD7xl62L._AC_UF894,1000_QL80_.jpg", color: "#ff4500", year: "2023 | DRAMA" },
+            { title: "The Batman", img: "https://m.media-amazon.com/images/I/71m6N9GVOBL._AC_UF894,1000_QL80_.jpg", color: "#323232", year: "2022 | AÇÃO" },
+            { title: "John Wick 4", img: "https://m.media-amazon.com/images/I/81SStYm89fL._AC_UF894,1000_QL80_.jpg", color: "#00ffcc", year: "2023 | CRIME" }
         ];
 
         let index = 0;
-        const mainTl = gsap.timeline();
+        let isAnimating = false;
 
-        // ANIMAÇÃO DE INTRODUÇÃO
-        mainTl.to("#name-luis", { opacity: 0.1, duration: 1 })
-              .set("#naruto", { visibility: "visible" })
-              .to("#arcPath", { strokeDashoffset: 0, duration: 1.5, ease: "power2.inOut" }, 0)
-              .to("#naruto", { 
-                  duration: 1.5, 
-                  ease: "power2.inOut", 
-                  motionPath: { path: "#arcPath", align: "#arcPath", autoRotate: true, alignOrigin: [0.5, 0.5] } 
-              }, 0)
-              // Impacto final
-              .to("#smoke-effect", { opacity: 1, scale: 3, duration: 0.2 })
-              .to("#smoke-effect", { opacity: 0, scale: 4, duration: 0.5 })
-              .to("#name-luis", { opacity: 1, scale: 1.2, color: "#fff", duration: 0.1, letterSpacing: "25px" }, "-=0.6")
-              .to("#name-luis", { scale: 1, color: "#ffcc00", duration: 0.5, ease: "back.out" })
-              
-              // Transição de Saída
-              .to("#intro-screen", { y: -1000, duration: 1, delay: 0.5, ease: "power4.in" })
-              .set("#intro-screen", { display: "none" })
-              .set("#movie-screen", { display: "flex" })
-              .to("#movie-screen", { opacity: 1, duration: 0.8, onComplete: updateMovie });
+        // --- TIMELINE DE ENTRADA ---
+        const tl = gsap.timeline();
 
-        function updateMovie() {
+        tl.to("#naruto-kunai", { 
+            opacity: 1, 
+            duration: 0.1 
+        })
+        .to("#naruto-kunai", {
+            duration: 1.2,
+            motionPath: {
+                path: "#kunaiPath",
+                autoRotate: true
+            },
+            ease: "power2.inOut"
+        }, 0)
+        .to("#smoke-effect", { 
+            scale: 2, 
+            opacity: 1, 
+            duration: 0.4, 
+            ease: "expo.out" 
+        }, "-=0.3")
+        .from("#name-luis", { 
+            scale: 0.5, 
+            letterSpacing: "50px", 
+            filter: "blur(20px)", 
+            duration: 1, 
+            ease: "power4.out" 
+        }, "-=0.5")
+        .to("#intro-screen", { 
+            yPercent: -100, 
+            duration: 1, 
+            ease: "expo.inOut", 
+            delay: 0.8 
+        })
+        .set("#movie-screen", { display: "flex" })
+        .to("#movie-screen", { 
+            opacity: 1, 
+            y: 0, 
+            duration: 1, 
+            onComplete: () => updateMovie(true) 
+        }, "-=0.5");
+
+        function updateMovie(isFirst = false) {
             const movie = movies[index];
             const card = document.getElementById('card');
             const glow = document.getElementById('glow');
             
-            // Animação de entrada do card
-            gsap.fromTo(".gallery-container", 
-                { rotationY: -30, opacity: 0, x: -50 }, 
-                { rotationY: 0, opacity: 1, x: 0, duration: 0.8, ease: "power3.out" }
-            );
-
             card.style.backgroundImage = `url('${movie.img}')`;
             glow.style.backgroundColor = movie.color;
             document.getElementById('title').innerText = movie.title;
             document.getElementById('year').innerText = movie.year;
-            document.getElementById('counter').innerText = `${index + 1} / ${movies.length}`;
+            document.getElementById('counter').innerText = `${index + 1} / ${movies.length} • CLIQUE PARA AVANÇAR`;
+
+            gsap.fromTo(".gallery-wrapper", 
+                { rotationY: 40, z: -200, opacity: 0 },
+                { rotationY: 0, z: 0, opacity: 1, duration: 1, ease: "power4.out" }
+            );
+            
+            gsap.from(".info-panel > *", {
+                y: 20,
+                opacity: 0,
+                stagger: 0.1,
+                duration: 0.8,
+                ease: "power3.out"
+            });
+
+            isAnimating = false;
         }
 
         function nextMovie() {
-            // Efeito de "slide" ao trocar
-            gsap.to(".gallery-container", { 
-                opacity: 0, 
-                x: 50, 
-                rotationY: 30, 
-                duration: 0.3, 
+            if (isAnimating) return;
+            isAnimating = true;
+
+            gsap.to(".gallery-wrapper", {
+                rotationY: -40,
+                z: -200,
+                opacity: 0,
+                duration: 0.6,
+                ease: "power4.in",
                 onComplete: () => {
                     index = (index + 1) % movies.length;
                     updateMovie();
-                } 
+                }
             });
         }
+
+        // Efeito de inclinação suave no mouse (Parallax)
+        document.addEventListener("mousemove", (e) => {
+            const x = (window.innerWidth / 2 - e.pageX) / 25;
+            const y = (window.innerHeight / 2 - e.pageY) / 25;
+            gsap.to(".gallery-wrapper", { rotationY: -x, rotationX: y, duration: 2, ease: "power2.out" });
+        });
     </script>
 </body>
 </html>
-
