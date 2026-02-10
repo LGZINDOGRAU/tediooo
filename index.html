@@ -3,14 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Luis | Cine Shinobi Privado</title>
+    <title>Cine Shinobi | Luis Edition</title>
+    
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/MotionPathPlugin.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Poppins:wght@300;400;700&display=swap" rel="stylesheet">
 
     <style>
         :root {
             --primary: #ffcc00;
             --bg: #050505;
+            --glass: rgba(255, 255, 255, 0.05);
         }
 
         body, html {
@@ -20,162 +23,266 @@
             color: white; overflow: hidden;
         }
 
-        /* --- TELA DE LOGIN --- */
-        #login-overlay {
+        /* --- TELA DE LOGIN (CORTE) --- */
+        #login-wrapper {
             position: fixed;
             inset: 0;
             z-index: 1000;
-            background: linear-gradient(45deg, #000, #1a1a1a);
             display: flex;
             justify-content: center;
             align-items: center;
-            transition: transform 0.8s cubic-bezier(0.87, 0, 0.13, 1);
         }
 
+        /* Divisão da tela para o efeito de corte */
+        .login-part {
+            position: absolute;
+            width: 100%;
+            height: 50%;
+            background: #0a0a0a;
+            z-index: -1;
+            transition: transform 0.8s ease-in-out;
+        }
+        .top-part { top: 0; border-bottom: 1px solid #222; }
+        .bottom-part { bottom: 0; border-top: 1px solid #222; }
+
         .login-box {
-            background: rgba(255, 255, 255, 0.05);
-            backdrop-filter: blur(15px);
+            background: var(--glass);
+            backdrop-filter: blur(20px);
             padding: 40px;
             border-radius: 20px;
             border: 1px solid rgba(255, 255, 255, 0.1);
             text-align: center;
-            width: 300px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            width: 320px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.8);
         }
 
         .login-box h2 {
             font-family: 'Bebas Neue', sans-serif;
-            font-size: 2.5rem;
+            font-size: 3rem;
             color: var(--primary);
-            margin-bottom: 20px;
-            letter-spacing: 2px;
+            margin: 0 0 20px 0;
+            letter-spacing: 3px;
         }
 
         input {
             width: 100%;
             padding: 12px;
             margin: 10px 0;
-            background: rgba(255,255,255,0.1);
-            border: none;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: 8px;
             color: white;
             outline: none;
-            box-sizing: border-box;
+            transition: 0.3s;
         }
+
+        input:focus { border-color: var(--primary); background: rgba(255,255,255,0.15); }
 
         button {
             width: 100%;
-            padding: 12px;
+            padding: 14px;
             margin-top: 15px;
             background: var(--primary);
             border: none;
             border-radius: 8px;
-            font-weight: 600;
+            font-weight: 700;
             cursor: pointer;
-            transition: transform 0.2s;
+            letter-spacing: 1px;
         }
 
-        button:active { transform: scale(0.95); }
-
-        #error-msg {
-            color: #ff4444;
-            font-size: 0.8rem;
-            margin-top: 10px;
-            display: none;
+        #kunai-anim {
+            position: absolute;
+            width: 60px;
+            height: 60px;
+            background: url('https://cdn-icons-png.flaticon.com/512/1088/1088537.png') center/contain no-repeat;
+            opacity: 0;
+            z-index: 1100;
+            pointer-events: none;
         }
 
-        /* --- CONTEÚDO PRINCIPAL (OCULTO INICIALMENTE) --- */
-        #main-content {
+        /* --- CONTEÚDO PRINCIPAL --- */
+        #main-app {
             display: none;
+            opacity: 0;
             height: 100vh;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
-            flex-direction: column;
+            background: radial-gradient(circle at center, #111 0%, #000 100%);
         }
 
-        /* Reaproveitando estilos do card anterior */
+        #welcome-msg {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            color: var(--primary);
+            margin-bottom: 5px;
+            letter-spacing: 4px;
+        }
+
+        .gallery-container {
+            position: relative;
+            width: 320px;
+            height: 480px;
+            cursor: pointer;
+            perspective: 1000px;
+        }
+
         .movie-card {
-            width: 300px;
-            height: 450px;
+            width: 100%; height: 100%;
             border-radius: 20px;
             background-size: cover;
             background-position: center;
-            box-shadow: 0 30px 60px rgba(0,0,0,0.8);
+            box-shadow: 0 30px 60px rgba(0,0,0,0.9);
             border: 1px solid rgba(255,255,255,0.1);
+            position: relative;
+            overflow: hidden;
         }
 
-        h1 { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; color: var(--primary); margin-top: 20px; }
+        .movie-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, transparent 60%);
+        }
+
+        .glow {
+            position: absolute;
+            inset: -20px;
+            filter: blur(60px);
+            opacity: 0.4;
+            z-index: -1;
+            border-radius: 20px;
+        }
+
+        .info { text-align: center; margin-top: 30px; }
+        .info h3 { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; margin: 0; color: var(--primary); }
+        .info p { margin: 0; opacity: 0.6; font-weight: 300; letter-spacing: 2px; }
+
+        /* SVG Invisível para o caminho da Kunai */
+        #path-svg { position: absolute; width: 0; height: 0; }
     </style>
 </head>
 <body>
 
-    <div id="login-overlay">
-        <div class="login-box">
-            <h2>CINE SHINOBI</h2>
-            <input type="text" id="user" placeholder="Usuário Ninja">
+    <div id="login-wrapper">
+        <div class="login-part top-part"></div>
+        <div class="login-part bottom-part"></div>
+        
+        <div id="kunai-anim"></div>
+        
+        <div class="login-box" id="box">
+            <h2>LOGIN NINJA</h2>
+            <input type="text" id="user" placeholder="Usuário">
             <input type="password" id="pass" placeholder="Senha Secreta">
-            <button onclick="checkLogin()">ENTRAR</button>
-            <p id="error-msg">Acesso Negado, Genin!</p>
+            <button onclick="tentarLogin()">LIBERAR ACESSO</button>
         </div>
     </div>
 
-    <div id="main-content">
-        <div id="card" class="movie-card"></div>
-        <h1 id="title">Carregando...</h1>
-        <p>Clique no card para navegar</p>
-    </div>
+    <svg id="path-svg" viewBox="0 0 800 400">
+        <path id="slashPath" d="M -100 200 L 900 200" fill="none"/>
+    </svg>
+
+    <main id="main-app">
+        <div id="welcome-msg">BEM-VINDO, HOKAGE</div>
+        <div class="gallery-container" onclick="nextMovie()">
+            <div id="glow" class="glow"></div>
+            <div id="card" class="movie-card"></div>
+        </div>
+        <div class="info">
+            <p id="year">2024</p>
+            <h3 id="title">FILME</h3>
+        </div>
+    </main>
 
     <script>
-        // CONFIGURAÇÃO PRIVADA
-        const SEGREDO = {
-            usuario: "manugotíca",
-            senha: "luislindo" // Mude aqui para o que você quiser
+        gsap.registerPlugin(MotionPathPlugin);
+
+        // --- CONFIGURAÇÃO ---
+        const CONFIG = {
+            user: "manugotíca",
+            pass: "luislindo" // Mude sua senha aqui!
         };
 
         const movies = [
-            { title: "Duna 2", img: "https://www.beautifulballad.org/wp-content/uploads/2024/01/dune-part-two-DUNE2_VERT_MAIN_2764x4096_DOM_REV_rgb.jpg" },
-            { title: "Batman", img: "https://m.media-amazon.com/images/I/71m6N9GVOBL._AC_UF894,1000_QL80_.jpg" }
+            { title: "Duna: Parte Dois", img: "https://www.beautifulballad.org/wp-content/uploads/2024/01/dune-part-two-DUNE2_VERT_MAIN_2764x4096_DOM_REV_rgb.jpg", color: "#ff8c00", year: "2024 | SCI-FI" },
+            { title: "Spider-Man", img: "https://image.tmdb.org/t/p/original/xxPXsL8V95dTwL5vHWIIQALkJQS.jpg", color: "#00d2ff", year: "2023 | ANIMAÇÃO" },
+            { title: "The Batman", img: "https://m.media-amazon.com/images/I/71m6N9GVOBL._AC_UF894,1000_QL80_.jpg", color: "#ff0000", year: "2022 | AÇÃO" }
         ];
+
         let index = 0;
 
-        function checkLogin() {
+        function tentarLogin() {
             const u = document.getElementById('user').value;
             const p = document.getElementById('pass').value;
-            const error = document.getElementById('error-msg');
 
-            if(u === SEGREDO.usuario && p === SEGREDO.senha) {
-                // Animação de saída do login
-                gsap.to("#login-overlay", { 
-                    y: "-100%", 
-                    duration: 1.2, 
-                    ease: "expo.inOut",
-                    onComplete: () => {
-                        document.getElementById('login-overlay').style.display = 'none';
-                        startSite();
-                    }
-                });
+            if (u === CONFIG.user && p === CONFIG.pass) {
+                executarCorteNinja();
             } else {
-                error.style.display = 'block';
-                gsap.fromTo(".login-box", { x: -10 }, { x: 10, repeat: 5, yoyo: true, duration: 0.05 });
+                gsap.to("#box", { x: 10, repeat: 3, yoyo: true, duration: 0.05, onComplete: () => gsap.set("#box", {x:0}) });
+                alert("Senha incorreta, Genin!");
             }
         }
 
-        function startSite() {
-            document.getElementById('main-content').style.display = 'flex';
-            updateContent();
-            gsap.from("#main-content", { opacity: 0, scale: 0.8, duration: 1 });
+        function executarCorteNinja() {
+            const tl = gsap.timeline();
+
+            // 1. Kunai atravessa cortando
+            tl.to("#kunai-anim", { opacity: 1, duration: 0.1 })
+              .to("#kunai-anim", {
+                  duration: 0.5,
+                  motionPath: { path: "#slashPath", autoRotate: true },
+                  ease: "none"
+              })
+              // 2. A caixa de login some e a tela corta
+              .to("#box", { scale: 0, opacity: 0, duration: 0.3 }, "-=0.2")
+              .to(".top-part", { yPercent: -100, duration: 0.8, ease: "expo.inOut" }, "-=0.1")
+              .to(".bottom-part", { yPercent: 100, duration: 0.8, ease: "expo.inOut" }, "-=0.8")
+              // 3. Mostra o App
+              .set("#login-wrapper", { display: "none" })
+              .set("#main-app", { display: "flex" })
+              .to("#main-app", { opacity: 1, duration: 1, onComplete: updateMovie });
         }
 
-        function updateContent() {
-            const m = movies[index];
-            document.getElementById('card').style.backgroundImage = `url('${m.img}')`;
-            document.getElementById('title').innerText = m.title;
+        function updateMovie() {
+            const movie = movies[index];
+            const card = document.getElementById('card');
+            const glow = document.getElementById('glow');
+
+            // Animação de entrada do card
+            gsap.fromTo(".gallery-container", 
+                { rotationY: -30, opacity: 0, scale: 0.8 }, 
+                { rotationY: 0, opacity: 1, scale: 1, duration: 0.8, ease: "back.out(1.7)" }
+            );
+
+            card.style.backgroundImage = `url('${movie.img}')`;
+            glow.style.backgroundColor = movie.color;
+            document.getElementById('title').innerText = movie.title;
+            document.getElementById('year').innerText = movie.year;
+            
+            // Troca o Rank se for você
+            if(document.getElementById('user').value.toLowerCase() === 'luis') {
+                document.getElementById('welcome-msg').innerText = "BEM-VINDO, HOKAGE LUIS";
+            }
         }
 
-        document.getElementById('card').onclick = () => {
-            index = (index + 1) % movies.length;
-            gsap.to("#card", { rotationY: "+=180", duration: 0.6, onComplete: updateContent });
-        };
+        function nextMovie() {
+            gsap.to(".gallery-container", {
+                opacity: 0, scale: 1.1, duration: 0.4, 
+                onComplete: () => {
+                    index = (index + 1) % movies.length;
+                    updateMovie();
+                }
+            });
+        }
+
+        // Parallax do mouse nos cards
+        document.addEventListener("mousemove", (e) => {
+            if(document.getElementById('main-app').style.display === "flex") {
+                const x = (window.innerWidth / 2 - e.pageX) / 20;
+                const y = (window.innerHeight / 2 - e.pageY) / 20;
+                gsap.to(".gallery-container", { rotationY: -x, rotationX: y, duration: 1 });
+            }
+        });
     </script>
 </body>
 </html>
