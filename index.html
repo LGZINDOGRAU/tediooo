@@ -20,7 +20,8 @@
 
         .login-box { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(20px); padding: 40px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); text-align: center; width: 320px; }
         input { width: 100%; padding: 12px; margin: 10px 0; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: white; outline: none; box-sizing: border-box; }
-        button { width: 100%; padding: 14px; margin-top: 15px; background: var(--primary); border: none; border-radius: 8px; font-weight: 700; cursor: pointer; }
+        button { width: 100%; padding: 14px; margin-top: 15px; background: var(--primary); border: none; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+        button:hover { background: #fff; color: #000; }
 
         /* INTRO PÓS-LOGIN */
         #intro-screen { position: fixed; inset: 0; z-index: 1500; background: #000; display: none; justify-content: center; align-items: center; }
@@ -30,16 +31,32 @@
         /* KUNAI LOCAL */
         #kunai-anim { 
             position: absolute; width: 80px; height: 80px; 
-            background: url('https://tse2.mm.bing.net/th/id/OIP.V4v1KhZZdD1kNTQaTsG0RQHaHa?pid=Api&P=0&h=220') center/contain no-repeat; /* NOME DO SEU ARQUIVO AQUI */
+            background: url('https://tse2.mm.bing.net/th/id/OIP.V4v1KhZZdD1kNTQaTsG0RQHaHa?pid=Api&P=0&h=220') center/contain no-repeat; 
             opacity: 0; z-index: 2100; pointer-events: none; 
         }
 
         /* SITE PRINCIPAL */
-        #main-app { display: none; opacity: 0; height: 100vh; flex-direction: column; justify-content: center; align-items: center; }
-        .gallery-container { width: 320px; height: 480px; cursor: pointer; perspective: 1000px; }
+        #main-app { display: none; opacity: 0; height: 100vh; flex-direction: column; justify-content: center; align-items: center; position: relative; }
+        
+        /* ILUMINAÇÃO SUAVE ADAPTATIVA */
+        #glow-bg {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: var(--primary);
+            filter: blur(120px);
+            opacity: 0.2;
+            z-index: -1;
+            border-radius: 50%;
+            transition: background 1s ease;
+            pointer-events: none;
+        }
+
+        .gallery-container { width: 320px; height: 480px; cursor: pointer; perspective: 1000px; z-index: 2; }
         .movie-card { width: 100%; height: 100%; border-radius: 20px; background-size: cover; background-position: center; box-shadow: 0 20px 50px rgba(0,0,0,0.8); }
-        .info { text-align: center; margin-top: 30px; }
-        h3 { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; color: var(--primary); margin: 0; }
+        .info { text-align: center; margin-top: 30px; z-index: 2; }
+        h3 { font-family: 'Bebas Neue', sans-serif; font-size: 3rem; color: var(--primary); margin: 0; transition: color 1s ease; }
+        p { opacity: 0.7; letter-spacing: 2px; }
         
         #path-svg { position: absolute; width: 0; height: 0; }
     </style>
@@ -66,6 +83,7 @@
     <svg id="path-svg" viewBox="0 0 800 400"><path id="slashPath" d="M -100 200 L 900 200" fill="none"/></svg>
 
     <main id="main-app">
+        <div id="glow-bg"></div>
         <div class="gallery-container" onclick="nextMovie()">
             <div id="card" class="movie-card"></div>
         </div>
@@ -78,13 +96,13 @@
     <script>
         gsap.registerPlugin(MotionPathPlugin);
 
-        // AQUI ESTÃO OS SEUS FILMES (Pode mudar os nomes e links à vontade)
+        // CONFIGURAÇÕES E FILMES (Com cores de iluminação personalizadas)
         const CONFIG = { user: "manugotíca", pass: "luislindo" }; 
         const movies = [
-            { title: "Duna: Parte 2", img: "https://4kwallpapers.com/images/walls/thumbs_3t/15307.jpg", year: "2024" },
-            { title: "Spider-Man", img: "https://www.movieposters.com/cdn/shop/products/spider-man-across-the-spider-verse_gh6f43xr.jpg?v=1762971899&width=1680", year: "2023" },
-            { title: "The Batman", img: "https://i5.walmartimages.com/seo/Posters-The-Batman-Movie-16-x-20-Poster_fdbcf150-178f-4f5d-9bba-63de1e9f51df.de478aa3eeb5a9772dc98cab5c907948.jpeg?odnHeight=573&odnWidth=573&odnBg=FFFFFF", year: "2022" },
-            { title: "John Wick 4", img: "https://4kwallpapers.com/images/walls/thumbs_3t/10631.jpg", year: "2023" }
+            { title: "Duna: Parte 2", img: "https://4kwallpapers.com/images/walls/thumbs_3t/15307.jpg", year: "2024", color: "#ff8c00" },
+            { title: "Spider-Man", img: "https://www.movieposters.com/cdn/shop/products/spider-man-across-the-spider-verse_gh6f43xr.jpg?v=1762971899&width=1680", year: "2023", color: "#e30022" },
+            { title: "The Batman", img: "https://i5.walmartimages.com/seo/Posters-The-Batman-Movie-16-x-20-Poster_fdbcf150-178f-4f5d-9bba-63de1e9f51df.de478aa3eeb5a9772dc98cab5c907948.jpeg?odnHeight=573&odnWidth=573&odnBg=FFFFFF", year: "2022", color: "#ff0000" },
+            { title: "John Wick 4", img: "https://4kwallpapers.com/images/walls/thumbs_3t/10631.jpg", year: "2023", color: "#00ccff" }
         ];
 
         let index = 0;
@@ -116,10 +134,21 @@
 
         function updateMovie() {
             const m = movies[index];
+            const glow = document.getElementById('glow-bg');
+            const title = document.getElementById('title');
+            
+            // Atualiza conteúdo
             document.getElementById('card').style.backgroundImage = `url('${m.img}')`;
-            document.getElementById('title').innerText = m.title;
+            title.innerText = m.title;
             document.getElementById('year').innerText = m.year;
-            gsap.fromTo(".gallery-container", { rotationY: -30, opacity: 0 }, { rotationY: 0, opacity: 1, duration: 0.8 });
+            
+            // Atualiza cores da iluminação suave
+            glow.style.background = m.color;
+            title.style.color = m.color;
+
+            // Animação de transição
+            gsap.fromTo(".gallery-container", { rotationY: -30, opacity: 0, scale: 0.9 }, { rotationY: 0, opacity: 1, scale: 1, duration: 0.8 });
+            gsap.fromTo(glow, { opacity: 0, scale: 0.5 }, { opacity: 0.3, scale: 1, duration: 1.2 });
         }
 
         function nextMovie() {
