@@ -1,138 +1,838 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Hero</title>
-    <style>
-        body {
-            margin: 0;
-            background-color: #111;
-            color: white;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding-top: 20px;
-        }
-        #gameArea {
-            position: relative;
-        }
-        canvas {
-            background-color: #222;
-            border: 2px solid #555;
-            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
-        }
-        #scoreBoard {
-            font-size: 24px;
-            margin-bottom: 10px;
-            font-weight: bold;
-            color: #0ff;
-        }
-        .controls {
-            margin-top: 10px;
-            color: #aaa;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FRET STORM — Guitar Hero Web</title>
+<style>
+  :root{
+    --bg:#07070c;
+    --stage:#0d0d16;
+    --neck:#14141f;
+    --line:#2a2a3d;
+    --text:#f2f0ea;
+    --muted:#8a8a9e;
+    --purple:#b565ff;
+    --lane-a:#3ddc84; /* verde  - A */
+    --lane-s:#ff4d5e; /* verm.  - S */
+    --lane-d:#ffd93d; /* amar.  - D */
+    --lane-f:#4da6ff; /* azul   - F */
+    --lane-space:#ff9f45; /* laranja - espaço */
+  }
+  *{box-sizing:border-box;}
+  html,body{
+    margin:0; height:100%; background:var(--bg); color:var(--text);
+    font-family:'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+    overflow:hidden; -webkit-tap-highlight-color:transparent;
+  }
+  @font-face{
+    font-family:'Rocker';
+    src:local('Impact');
+  }
+  h1,h2,h3,.display{
+    font-family:'Arial Black','Impact',sans-serif;
+    letter-spacing:1px;
+    text-transform:uppercase;
+  }
+  #app{ position:relative; width:100vw; height:100vh; }
+
+  /* ---------- Fundo de palco ---------- */
+  #stageGlow{
+    position:absolute; inset:0;
+    background:
+      radial-gradient(60% 40% at 50% 0%, rgba(181,101,255,0.25), transparent 60%),
+      radial-gradient(80% 60% at 20% 100%, rgba(255,79,94,0.12), transparent 60%),
+      radial-gradient(80% 60% at 80% 100%, rgba(61,220,132,0.12), transparent 60%),
+      var(--bg);
+    pointer-events:none;
+  }
+
+  /* ---------- Telas ---------- */
+  .screen{
+    position:absolute; inset:0; display:none;
+    flex-direction:column; align-items:center; justify-content:center;
+    text-align:center; padding:24px; z-index:5;
+  }
+  .screen.active{ display:flex; }
+
+  .logo{
+    font-size:clamp(2.4rem, 8vw, 5rem);
+    line-height:0.95;
+    background:linear-gradient(90deg, var(--lane-a), var(--lane-d), var(--lane-space), var(--lane-s), var(--lane-f));
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+    filter:drop-shadow(0 0 18px rgba(181,101,255,0.35));
+    margin:0 0 6px 0;
+  }
+  .tagline{ color:var(--muted); margin-bottom:36px; font-size:0.95rem; letter-spacing:3px; }
+
+  .btn{
+    appearance:none; border:none; cursor:pointer;
+    padding:14px 30px; margin:8px; border-radius:10px;
+    font-family:inherit; font-weight:800; font-size:1rem;
+    letter-spacing:1px; text-transform:uppercase;
+    background:var(--purple); color:#0b0b12;
+    box-shadow:0 6px 0 #7a3fc9, 0 8px 18px rgba(181,101,255,0.35);
+    transition:transform .08s ease;
+  }
+  .btn:active{ transform:translateY(4px); box-shadow:0 2px 0 #7a3fc9; }
+  .btn.ghost{
+    background:transparent; color:var(--text);
+    box-shadow:inset 0 0 0 2px var(--line);
+  }
+  .btn.ghost:active{ box-shadow:inset 0 0 0 2px var(--line); transform:translateY(2px); }
+
+  /* ---------- Seleção de música ---------- */
+  #songList{
+    display:flex; gap:16px; flex-wrap:wrap; justify-content:center;
+    max-width:900px; margin:12px 0 28px;
+  }
+  .songCard{
+    width:200px; padding:18px 16px; border-radius:14px;
+    background:linear-gradient(160deg, var(--stage), var(--neck));
+    box-shadow:inset 0 0 0 1px var(--line);
+    cursor:pointer; text-align:left; transition:box-shadow .15s, transform .15s;
+  }
+  .songCard:hover{ transform:translateY(-4px); box-shadow:inset 0 0 0 2px var(--purple); }
+  .songCard.selected{ box-shadow:inset 0 0 0 2px var(--lane-a), 0 0 20px rgba(61,220,132,0.25); }
+  .songCard .accent{ width:34px; height:5px; border-radius:3px; margin-bottom:12px; }
+  .songCard h3{ font-size:1rem; margin:0 0 4px; }
+  .songCard p{ margin:0; color:var(--muted); font-size:0.78rem; }
+  .diff-dots{ margin-top:10px; display:flex; gap:4px; }
+  .diff-dots span{ width:7px; height:7px; border-radius:50%; background:var(--line); }
+  .diff-dots span.on{ background:var(--purple); }
+
+  .diffRow{ display:flex; gap:10px; margin-bottom:22px; }
+  .diffChip{
+    padding:8px 18px; border-radius:999px; cursor:pointer;
+    background:var(--stage); box-shadow:inset 0 0 0 1px var(--line);
+    font-size:0.8rem; letter-spacing:1px; text-transform:uppercase; font-weight:700;
+    color:var(--muted);
+  }
+  .diffChip.active{ background:var(--purple); color:#0b0b12; box-shadow:none; }
+
+  /* ---------- HUD do jogo ---------- */
+  #gameScreen{ display:none; }
+  #gameScreen.active{ display:block; }
+  #hud{
+    position:absolute; top:0; left:0; right:0; z-index:4;
+    display:flex; justify-content:space-between; align-items:flex-start;
+    padding:18px 26px; pointer-events:none;
+  }
+  #scoreBox .value{ font-size:clamp(1.8rem,4vw,2.6rem); font-weight:900; }
+  #scoreBox .label{ color:var(--muted); font-size:0.7rem; letter-spacing:3px; }
+  #comboBox{ text-align:center; }
+  #comboBox .value{ font-size:clamp(1.6rem,4vw,2.4rem); font-weight:900; color:var(--lane-space); opacity:0; transition:opacity .1s; }
+  #comboBox .label{ color:var(--muted); font-size:0.65rem; letter-spacing:3px; }
+  #accBox{ text-align:right; }
+  #accBox .value{ font-size:clamp(1.4rem,3vw,2rem); font-weight:900; }
+  #accBox .label{ color:var(--muted); font-size:0.7rem; letter-spacing:3px; }
+
+  #rockMeterWrap{
+    position:absolute; top:18px; left:50%; transform:translateX(-50%);
+    width:min(46vw,340px); height:14px; border-radius:8px; overflow:hidden;
+    background:var(--stage); box-shadow:inset 0 0 0 1px var(--line); z-index:4;
+    margin-top:56px;
+  }
+  #rockMeterFill{
+    height:100%; width:50%;
+    background:linear-gradient(90deg, var(--lane-s), var(--lane-d), var(--lane-a));
+    transition:width .12s linear;
+  }
+
+  #judgement{
+    position:absolute; top:38%; left:50%; transform:translate(-50%,-50%) scale(1);
+    font-weight:900; font-size:clamp(1.6rem,4vw,2.6rem);
+    letter-spacing:2px; opacity:0; z-index:6; pointer-events:none;
+    text-shadow:0 0 20px currentColor;
+  }
+
+  canvas#highway{ display:block; width:100%; height:100%; }
+
+  #keyHints{
+    position:absolute; bottom:14px; left:0; right:0;
+    display:flex; justify-content:center; gap:10px; z-index:4; pointer-events:none;
+  }
+  .keyHint{
+    width:46px; height:26px; border-radius:6px; display:flex; align-items:center; justify-content:center;
+    font-size:0.7rem; font-weight:800; color:#0b0b12; opacity:0.85;
+  }
+
+  #pauseBtn{
+    position:absolute; top:18px; right:18px; z-index:7; pointer-events:auto;
+    background:var(--stage); color:var(--text); border:none; border-radius:8px;
+    padding:8px 12px; cursor:pointer; box-shadow:inset 0 0 0 1px var(--line);
+    font-size:0.75rem; letter-spacing:1px; text-transform:uppercase;
+  }
+
+  /* ---------- Resultado ---------- */
+  #resultCard{
+    background:linear-gradient(160deg, var(--stage), var(--neck));
+    border-radius:20px; padding:38px 48px; box-shadow:inset 0 0 0 1px var(--line), 0 20px 60px rgba(0,0,0,0.5);
+    min-width:min(90vw,420px);
+  }
+  #resultCard h2{ margin:0 0 4px; font-size:1.1rem; color:var(--muted); letter-spacing:3px; }
+  #resultScore{ font-size:clamp(2.4rem,7vw,3.6rem); font-weight:900; margin:6px 0 18px; }
+  .resultRow{ display:flex; justify-content:space-between; padding:6px 0; border-top:1px solid var(--line); font-size:0.95rem; }
+  .resultRow span:first-child{ color:var(--muted); }
+  #grade{
+    display:inline-block; margin-top:18px; padding:10px 26px; border-radius:10px;
+    font-size:1.6rem; font-weight:900; letter-spacing:2px;
+  }
+
+  .hidden{ display:none !important; }
+  .small-muted{ color:var(--muted); font-size:0.85rem; max-width:520px; }
+
+  @media (max-width:520px){
+    .keyHint{ width:38px; height:22px; font-size:0.6rem; }
+    #resultCard{ padding:28px 24px; }
+  }
+</style>
 </head>
 <body>
+<div id="app">
+  <div id="stageGlow"></div>
 
-    <div id="scoreBoard">Pontuação: <span id="score">0</span></div>
-    
-    <div id="gameArea">
-        <canvas id="gameCanvas" width="400" height="600"></canvas>
+  <!-- MENU PRINCIPAL / SELEÇÃO -->
+  <div id="menuScreen" class="screen active">
+    <div class="logo">FRET<br>STORM</div>
+    <div class="tagline">um guitar hero de navegador</div>
+
+    <div class="diffRow" id="diffRow">
+      <div class="diffChip" data-diff="facil">Fácil</div>
+      <div class="diffChip active" data-diff="normal">Normal</div>
+      <div class="diffChip" data-diff="dificil">Difícil</div>
     </div>
 
-    <div class="controls">
-        Use as teclas: <strong>A</strong> (Verde), <strong>S</strong> (Vermelho), <strong>D</strong> (Amarelo), <strong>F</strong> (Azul)
+    <div id="songList"></div>
+
+    <button class="btn" id="playBtn">Tocar</button>
+    <p class="small-muted">Use as teclas <b>A S D F</b> e <b>ESPAÇO</b> para acertar as notas nas faixas correspondentes. Sons gerados ao vivo — nenhuma trilha protegida é usada.</p>
+  </div>
+
+  <!-- JOGO -->
+  <div id="gameScreen">
+    <canvas id="highway"></canvas>
+
+    <div id="hud">
+      <div id="scoreBox">
+        <div class="label">Pontuação</div>
+        <div class="value" id="scoreValue">0</div>
+      </div>
+      <div id="comboBox">
+        <div class="value" id="comboValue">0x</div>
+        <div class="label">Combo</div>
+      </div>
+      <div id="accBox">
+        <div class="label">Precisão</div>
+        <div class="value" id="accValue">100%</div>
+      </div>
     </div>
 
-    <script>
-        const canvas = document.getElementById('gameCanvas');
-        const ctx = canvas.getContext('2d');
-        const scoreElement = document.getElementById('score');
+    <div id="rockMeterWrap"><div id="rockMeterFill"></div></div>
+    <div id="judgement">PERFEITO</div>
+    <button id="pauseBtn">Pausar</button>
 
-        let score = 0;
-        let notes = [];
-        const keys = ['a', 's', 'd', 'f'];
-        const colors = ['#00ff00', '#ff0000', '#ffff00', '#0000ff'];
-        const laneWidth = canvas.width / 4;
-        const hitZoneY = 500;
-        const hitZoneHeight = 40;
+    <div id="keyHints">
+      <div class="keyHint" style="background:var(--lane-a)">A</div>
+      <div class="keyHint" style="background:var(--lane-s)">S</div>
+      <div class="keyHint" style="background:var(--lane-d)">D</div>
+      <div class="keyHint" style="background:var(--lane-f)">F</div>
+      <div class="keyHint" style="background:var(--lane-space)">␣</div>
+    </div>
+  </div>
 
-        // Função para criar notas aleatórias
-        function spawnNote() {
-            const lane = Math.floor(Math.random() * 4);
-            notes.push({
-                x: lane * laneWidth,
-                y: -50,
-                color: colors[lane],
-                lane: lane,
-                speed: 4 + (score * 0.05) // Fica mais rápido com o tempo
-            });
-        }
+  <!-- PAUSA -->
+  <div id="pauseScreen" class="screen">
+    <div id="resultCard">
+      <h2>Pausado</h2>
+      <div style="margin:18px 0;">
+        <button class="btn" id="resumeBtn">Continuar</button><br>
+        <button class="btn ghost" id="quitBtn">Sair para o menu</button>
+      </div>
+    </div>
+  </div>
 
-        // Loop principal do jogo
-        function updateGame() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+  <!-- RESULTADO -->
+  <div id="resultScreen" class="screen">
+    <div id="resultCard">
+      <h2>Resultado</h2>
+      <div id="resultScore">0</div>
+      <div class="resultRow"><span>Música</span><span id="resSong">-</span></div>
+      <div class="resultRow"><span>Acertos perfeitos</span><span id="resPerfect">0</span></div>
+      <div class="resultRow"><span>Acertos bons</span><span id="resGood">0</span></div>
+      <div class="resultRow"><span>Erros</span><span id="resMiss">0</span></div>
+      <div class="resultRow"><span>Maior combo</span><span id="resCombo">0</span></div>
+      <div class="resultRow"><span>Precisão</span><span id="resAcc">0%</span></div>
+      <div id="grade">S</div>
+      <div style="margin-top:24px;">
+        <button class="btn" id="retryBtn">Tentar de novo</button>
+        <button class="btn ghost" id="menuBtn">Menu</button>
+      </div>
+    </div>
+  </div>
+</div>
 
-            // Desenhar linha de acerto (Hit Zone)
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
-            ctx.fillRect(0, hitZoneY, canvas.width, hitZoneHeight);
-            ctx.strokeStyle = '#fff';
-            ctx.strokeRect(0, hitZoneY, canvas.width, hitZoneHeight);
+<script>
+/* =========================================================================
+   FRET STORM — jogo estilo Guitar Hero em Canvas + Web Audio (procedural)
+   Todo o áudio é sintetizado em tempo real, então não há trilhas de terceiros.
+   ========================================================================= */
 
-            // Atualizar e desenhar notas
-            for (let i = notes.length - 1; i >= 0; i--) {
-                let note = notes[i];
-                note.y += note.speed;
+(function(){
+  "use strict";
 
-                // Desenhar a nota
-                ctx.fillStyle = note.color;
-                ctx.beginPath();
-                ctx.arc(note.x + laneWidth / 2, note.y, 20, 0, Math.PI * 2);
-                ctx.fill();
+  /* ---------------- Configuração de faixas ---------------- */
+  const LANES = [
+    { key:'a', color:getVar('--lane-a'), name:'A' },
+    { key:'s', color:getVar('--lane-s'), name:'S' },
+    { key:'d', color:getVar('--lane-d'), name:'D' },
+    { key:'f', color:getVar('--lane-f'), name:'F' },
+    { key:' ', color:getVar('--lane-space'), name:'␣' },
+  ];
+  function getVar(name){
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
 
-                // Remover nota se passar da tela (errou)
-                if (note.y > canvas.height) {
-                    notes.splice(i, 1);
-                    score = Math.max(0, score - 5); // Perde ponto
-                    scoreElement.innerText = score;
-                }
-            }
+  /* ---------------- Definição das "músicas" (padrões procedurais) ----------------
+     Cada música é uma sequência de notas: { t: tempo em segundos, lane: índice 0-4 }
+     Geradas a partir de um padrão rítmico + escala, para variar por dificuldade. */
+  const SCALES = {
+    rock:  [220.00,246.94,261.63,293.66,329.63,349.23,392.00], // Lá menor pentatônica-ish
+    synth: [174.61,196.00,220.00,246.94,261.63,293.66,329.63],
+    metal: [164.81,196.00,207.65,246.94,261.63,311.13,349.23],
+  };
 
-            requestAnimationFrame(updateGame);
-        }
+  const SONGS = [
+    { id:'thunder',  title:'Thunder Riff',    sub:'Rock clássico · 128 BPM', bpm:128, scale:'rock',  wave:'sawtooth', accent:'--lane-a' },
+    { id:'neon',     title:'Neon Circuit',    sub:'Synthwave · 140 BPM',     bpm:140, scale:'synth', wave:'square',   accent:'--lane-f' },
+    { id:'inferno',  title:'Inferno Solo',    sub:'Metal veloz · 160 BPM',   bpm:160, scale:'metal', wave:'sawtooth', accent:'--lane-s' },
+    { id:'drift',    title:'Midnight Drift',  sub:'Groove · 110 BPM',        bpm:110, scale:'synth', wave:'triangle', accent:'--lane-d' },
+  ];
 
-        // Detectar teclas pressionadas
-        window.addEventListener('keydown', (e) => {
-            const keyIndex = keys.indexOf(e.key.toLowerCase());
-            
-            if (keyIndex !== -1) {
-                // Efeito visual ao apertar a tecla
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-                ctx.fillRect(keyIndex * laneWidth, hitZoneY, laneWidth, hitZoneHeight);
+  const DIFFS = {
+    facil:    { density:0.5,  speed:2.6, label:'Fácil' },
+    normal:   { density:0.75, speed:3.4, label:'Normal' },
+    dificil:  { density:1.0,  speed:4.4, label:'Difícil' },
+  };
 
-                // Checar acerto
-                for (let i = 0; i < notes.length; i++) {
-                    let note = notes[i];
-                    if (note.lane === keyIndex && note.y > hitZoneY - 20 && note.y < hitZoneY + hitZoneHeight) {
-                        notes.splice(i, 1); // Acertou, remove a nota
-                        score += 10;
-                        scoreElement.innerText = score;
-                        break; 
-                    }
-                }
-            }
-        });
+  const HIT_WINDOW_PERFECT = 0.09; // segundos
+  const HIT_WINDOW_GOOD    = 0.18;
+  const NOTE_LEAD_TIME     = 2.2;  // segundos que a nota leva para descer até a linha de acerto
 
-        // Iniciar o jogo
-        setInterval(spawnNote, 800); // Cria uma nota a cada 800ms
-        updateGame();
+  /* ---------------- Estado global ---------------- */
+  let selectedSong = SONGS[0];
+  let selectedDiff = 'normal';
 
-        // Dica de Áudio (Para adicionar sua música depois)
-        // const musica = new Audio('sua_musica.mp3');
-        // musica.play();
-    </script>
+  let audioCtx = null;
+  let masterGain = null;
+
+  let chart = [];         // notas da música atual: {t, lane, hit:false, missed:false}
+  let songDuration = 0;
+  let startTime = 0;
+  let elapsed = 0;
+  let running = false;
+  let paused = false;
+  let pauseOffset = 0;
+
+  let score = 0;
+  let combo = 0;
+  let maxCombo = 0;
+  let perfectCount = 0;
+  let goodCount = 0;
+  let missCount = 0;
+  let rock = 0.5; // 0..1
+
+  /* ---------------- Elementos DOM ---------------- */
+  const menuScreen   = document.getElementById('menuScreen');
+  const gameScreen   = document.getElementById('gameScreen');
+  const pauseScreen  = document.getElementById('pauseScreen');
+  const resultScreen = document.getElementById('resultScreen');
+  const songListEl   = document.getElementById('songList');
+  const diffRowEl    = document.getElementById('diffRow');
+  const canvas       = document.getElementById('highway');
+  const ctx2d        = canvas.getContext('2d');
+
+  const scoreValue = document.getElementById('scoreValue');
+  const comboValue = document.getElementById('comboValue');
+  const accValue   = document.getElementById('accValue');
+  const rockFill   = document.getElementById('rockMeterFill');
+  const judgementEl= document.getElementById('judgement');
+
+  /* ---------------- Construção do menu ---------------- */
+  function buildSongList(){
+    songListEl.innerHTML = '';
+    SONGS.forEach((song, i) => {
+      const card = document.createElement('div');
+      card.className = 'songCard' + (song === selectedSong ? ' selected' : '');
+      card.innerHTML = `
+        <div class="accent" style="background:var(${song.accent})"></div>
+        <h3>${song.title}</h3>
+        <p>${song.sub}</p>
+        <div class="diff-dots">${[0,1,2].map(d=>`<span class="${d===0?'on':''}"></span>`).join('')}</div>
+      `;
+      card.addEventListener('click', () => {
+        selectedSong = song;
+        [...songListEl.children].forEach(c=>c.classList.remove('selected'));
+        card.classList.add('selected');
+      });
+      songListEl.appendChild(card);
+    });
+  }
+  buildSongList();
+
+  diffRowEl.addEventListener('click', (e) => {
+    const chip = e.target.closest('.diffChip');
+    if(!chip) return;
+    selectedDiff = chip.dataset.diff;
+    [...diffRowEl.children].forEach(c=>c.classList.remove('active'));
+    chip.classList.add('active');
+  });
+
+  /* ---------------- Geração procedural do "chart" ---------------- */
+  function generateChart(song, diffKey){
+    const diff = DIFFS[diffKey];
+    const scale = SCALES[song.scale];
+    const beat = 60 / song.bpm;
+    const totalBeats = 96; // ~ duração fixa por música
+    const notes = [];
+    let rngSeed = hashStr(song.id + diffKey);
+    const rng = mulberry32(rngSeed);
+
+    let lastLane = -1;
+    for (let b = 4; b < totalBeats; b += 1) {
+      // subdivisão: às vezes coloca nota na meia-batida também, conforme densidade
+      const chance = diff.density;
+      if (rng() < chance) {
+        let lane = Math.floor(rng() * LANES.length);
+        if (lane === lastLane && rng() < 0.6) lane = (lane + 1 + Math.floor(rng()*3)) % LANES.length;
+        lastLane = lane;
+        notes.push({ t: b * beat, lane, freq: scale[Math.floor(rng()*scale.length)] });
+      }
+      if (diff.density > 0.6 && rng() < (diff.density - 0.5)) {
+        let lane = Math.floor(rng() * LANES.length);
+        notes.push({ t: (b + 0.5) * beat, lane, freq: scale[Math.floor(rng()*scale.length)] });
+      }
+    }
+    notes.sort((a,b)=>a.t-b.t);
+    notes.forEach(n => { n.hit=false; n.missed=false; n.result=null; });
+    const duration = totalBeats * beat + 2;
+    return { notes, duration };
+  }
+  function hashStr(str){
+    let h = 1779033703 ^ str.length;
+    for (let i=0;i<str.length;i++){
+      h = Math.imul(h ^ str.charCodeAt(i), 3432918353);
+      h = (h << 13) | (h >>> 19);
+    }
+    return h >>> 0;
+  }
+  function mulberry32(a){
+    return function(){
+      a |= 0; a = (a + 0x6D2B79F5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  /* ---------------- Áudio ---------------- */
+  function ensureAudio(){
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      masterGain = audioCtx.createGain();
+      masterGain.gain.value = 0.22;
+      masterGain.connect(audioCtx.destination);
+    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+  }
+
+  // Toca a "nota base" da música continuamente ao fundo (um leve pad/baixo) — opcional textura
+  let bgOsc = null, bgGain = null;
+  function startBackground(song){
+    stopBackground();
+    bgOsc = audioCtx.createOscillator();
+    bgGain = audioCtx.createGain();
+    bgOsc.type = 'triangle';
+    bgOsc.frequency.value = SCALES[song.scale][0] / 2;
+    bgGain.gain.value = 0.05;
+    bgOsc.connect(bgGain).connect(masterGain);
+    bgOsc.start();
+  }
+  function stopBackground(){
+    if (bgOsc) { try{ bgOsc.stop(); }catch(e){} bgOsc.disconnect(); bgOsc=null; }
+  }
+
+  function playNoteSound(freq, wave, good){
+    ensureAudio();
+    const t0 = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = wave;
+    osc.frequency.value = freq;
+    gain.gain.setValueAtTime(0.0001, t0);
+    gain.gain.exponentialRampToValueAtTime(good ? 0.35 : 0.12, t0 + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0 + (good?0.28:0.15));
+    osc.connect(gain).connect(masterGain);
+    osc.start(t0);
+    osc.stop(t0 + 0.3);
+  }
+
+  function playMissSound(){
+    ensureAudio();
+    const t0 = audioCtx.currentTime;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = 'square';
+    osc.frequency.setValueAtTime(180, t0);
+    osc.frequency.exponentialRampToValueAtTime(60, t0+0.15);
+    gain.gain.setValueAtTime(0.15, t0);
+    gain.gain.exponentialRampToValueAtTime(0.0001, t0+0.15);
+    osc.connect(gain).connect(masterGain);
+    osc.start(t0); osc.stop(t0+0.16);
+  }
+
+  /* ---------------- Layout do highway ---------------- */
+  function resizeCanvas(){
+    canvas.width = window.innerWidth * devicePixelRatio;
+    canvas.height = window.innerHeight * devicePixelRatio;
+    canvas.style.width = window.innerWidth + 'px';
+    canvas.style.height = window.innerHeight + 'px';
+    ctx2d.setTransform(devicePixelRatio,0,0,devicePixelRatio,0,0);
+  }
+  window.addEventListener('resize', resizeCanvas);
+
+  function laneGeometry(){
+    const w = window.innerWidth, h = window.innerHeight;
+    const hitY = h - 110;
+    const topWidthRatio = 0.34, bottomWidthRatio = 0.86;
+    const topW = w * topWidthRatio, bottomW = w * bottomWidthRatio;
+    const topX = (w - topW)/2, bottomX = (w - bottomW)/2;
+    return { w,h,hitY,topW,bottomW,topX,bottomX };
+  }
+
+  function laneXAt(laneIndex, progress /*0 top .. 1 bottom*/){
+    const g = laneGeometry();
+    const n = LANES.length;
+    const topLaneW = g.topW/n, bottomLaneW = g.bottomW/n;
+    const topCenter = g.topX + topLaneW*(laneIndex+0.5);
+    const bottomCenter = g.bottomX + bottomLaneW*(laneIndex+0.5);
+    return topCenter + (bottomCenter-topCenter)*progress;
+  }
+
+  /* ---------------- Loop principal ---------------- */
+  let rafId = null;
+  let keyDownAnim = {}; // lane -> timestamp para animação de tecla pressionada
+  let hitFx = []; // {lane, t, type}
+
+  function startGame(){
+    ensureAudio();
+    chart = generateChart(selectedSong, selectedDiff).notes.map(n=>({...n}));
+    songDuration = generateChart(selectedSong, selectedDiff).duration;
+    score=0; combo=0; maxCombo=0; perfectCount=0; goodCount=0; missCount=0; rock=0.5;
+    updateHud();
+    resizeCanvas();
+
+    switchScreen('game');
+    startBackground(selectedSong);
+    startTime = performance.now()/1000;
+    running = true; paused = false;
+    if (rafId) cancelAnimationFrame(rafId);
+    loop();
+  }
+
+  function loop(){
+    if (!running) return;
+    if (!paused) {
+      elapsed = performance.now()/1000 - startTime;
+      updateMissed();
+      draw();
+      if (elapsed > songDuration) {
+        endGame();
+        return;
+      }
+    }
+    rafId = requestAnimationFrame(loop);
+  }
+
+  function updateMissed(){
+    for (const n of chart) {
+      if (!n.hit && !n.missed && elapsed > n.t + HIT_WINDOW_GOOD) {
+        n.missed = true;
+        registerMiss();
+      }
+    }
+  }
+
+  function draw(){
+    const g = laneGeometry();
+    ctx2d.clearRect(0,0,g.w,g.h);
+
+    // fundo do highway (trapézio)
+    ctx2d.save();
+    const grad = ctx2d.createLinearGradient(0,0,0,g.h);
+    grad.addColorStop(0,'rgba(20,20,31,0.2)');
+    grad.addColorStop(1,'rgba(20,20,31,0.9)');
+    ctx2d.fillStyle = grad;
+    ctx2d.beginPath();
+    ctx2d.moveTo(g.topX,0);
+    ctx2d.lineTo(g.topX+g.topW,0);
+    ctx2d.lineTo(g.bottomX+g.bottomW,g.h);
+    ctx2d.lineTo(g.bottomX,g.h);
+    ctx2d.closePath();
+    ctx2d.fill();
+
+    // linhas de faixa
+    for (let i=0;i<=LANES.length;i++){
+      ctx2d.beginPath();
+      ctx2d.moveTo(laneXAt(i,0) - (i===LANES.length? (g.topW/LANES.length):0)*0 ,0);
+      const topX = g.topX + (g.topW/LANES.length)*i;
+      const botX = g.bottomX + (g.bottomW/LANES.length)*i;
+      ctx2d.moveTo(topX,0);
+      ctx2d.lineTo(botX,g.h);
+      ctx2d.strokeStyle='rgba(255,255,255,0.06)';
+      ctx2d.lineWidth=1;
+      ctx2d.stroke();
+    }
+
+    // linha de acerto
+    ctx2d.beginPath();
+    ctx2d.moveTo(g.bottomX-10, g.hitY);
+    ctx2d.lineTo(g.bottomX+g.bottomW+10, g.hitY);
+    ctx2d.strokeStyle='rgba(255,255,255,0.35)';
+    ctx2d.lineWidth=2;
+    ctx2d.stroke();
+
+    // botões de faixa (na linha de acerto)
+    LANES.forEach((lane,i)=>{
+      const cx = laneXAt(i,1);
+      const pressed = keyDownAnim[i] && (performance.now()-keyDownAnim[i] < 120);
+      const r = pressed ? 30 : 24;
+      ctx2d.beginPath();
+      ctx2d.arc(cx, g.hitY, r, 0, Math.PI*2);
+      ctx2d.fillStyle = pressed ? lane.color : hexAlpha(lane.color,0.35);
+      ctx2d.shadowColor = lane.color;
+      ctx2d.shadowBlur = pressed? 24:8;
+      ctx2d.fill();
+      ctx2d.shadowBlur = 0;
+      ctx2d.beginPath();
+      ctx2d.arc(cx, g.hitY, r, 0, Math.PI*2);
+      ctx2d.strokeStyle = lane.color;
+      ctx2d.lineWidth=2;
+      ctx2d.stroke();
+    });
+
+    // notas
+    for (const n of chart) {
+      if (n.hit || n.missed) continue;
+      const dt = n.t - elapsed;
+      if (dt > NOTE_LEAD_TIME || dt < -HIT_WINDOW_GOOD) continue;
+      const progress = 1 - (dt / NOTE_LEAD_TIME); // 0 topo -> 1 embaixo
+      const y = progress * g.hitY;
+      const x = laneXAt(n.lane, progress);
+      const size = 14 + progress*10;
+      const lane = LANES[n.lane];
+      ctx2d.beginPath();
+      ctx2d.arc(x,y,size,0,Math.PI*2);
+      ctx2d.fillStyle = lane.color;
+      ctx2d.shadowColor = lane.color;
+      ctx2d.shadowBlur = 12;
+      ctx2d.fill();
+      ctx2d.shadowBlur=0;
+      ctx2d.beginPath();
+      ctx2d.arc(x,y,size,0,Math.PI*2);
+      ctx2d.strokeStyle='rgba(255,255,255,0.6)';
+      ctx2d.lineWidth=2;
+      ctx2d.stroke();
+    }
+
+    // fx de acerto (partículas simples)
+    const now = performance.now();
+    hitFx = hitFx.filter(fx => now - fx.t < 400);
+    hitFx.forEach(fx=>{
+      const age=(now-fx.t)/400;
+      const cx = laneXAt(fx.lane,1);
+      ctx2d.beginPath();
+      ctx2d.arc(cx, g.hitY, 24 + age*40, 0, Math.PI*2);
+      ctx2d.strokeStyle = hexAlpha(fx.color, 1-age);
+      ctx2d.lineWidth = 3;
+      ctx2d.stroke();
+    });
+
+    ctx2d.restore();
+  }
+
+  function hexAlpha(hex, alpha){
+    // hex tipo #rrggbb
+    const h = hex.replace('#','');
+    if (h.length!==6) return hex;
+    const r=parseInt(h.slice(0,2),16), g=parseInt(h.slice(2,4),16), b=parseInt(h.slice(4,6),16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  /* ---------------- Entradas ---------------- */
+  function laneIndexForKey(k){
+    return LANES.findIndex(l => l.key === k);
+  }
+
+  function handleHit(laneIndex){
+    if (!running || paused) return;
+    keyDownAnim[laneIndex] = performance.now();
+
+    // procura a nota mais próxima nessa faixa dentro da janela boa
+    let best=null, bestDt=Infinity;
+    for (const n of chart) {
+      if (n.hit || n.missed || n.lane!==laneIndex) continue;
+      const dt = Math.abs(n.t - elapsed);
+      if (dt < bestDt) { bestDt=dt; best=n; }
+    }
+    if (best && bestDt <= HIT_WINDOW_GOOD) {
+      best.hit = true;
+      const perfect = bestDt <= HIT_WINDOW_PERFECT;
+      registerHit(perfect, laneIndex, best.freq);
+    } else {
+      // toque sem nota correspondente: pequena penalidade de rock, sem quebrar combo forte
+      rock = Math.max(0, rock - 0.01);
+      playMissSound();
+    }
+  }
+
+  function registerHit(perfect, laneIndex, freq){
+    combo += 1;
+    maxCombo = Math.max(maxCombo, combo);
+    const base = perfect ? 100 : 60;
+    const multiplier = 1 + Math.floor(combo/10)*0.5;
+    score += Math.round(base * Math.min(multiplier,4));
+    if (perfect) perfectCount++; else goodCount++;
+    rock = Math.min(1, rock + (perfect?0.035:0.02));
+    playNoteSound(freq, selectedSong.wave, true);
+    showJudgement(perfect? 'PERFEITO':'BOM', perfect? LANES[laneIndex].color : '#ffd93d');
+    hitFx.push({lane:laneIndex, t:performance.now(), color:LANES[laneIndex].color});
+    updateHud();
+  }
+
+  function registerMiss(){
+    combo = 0;
+    missCount++;
+    rock = Math.max(0, rock - 0.06);
+    showJudgement('ERROU', '#ff4d5e');
+    updateHud();
+  }
+
+  let judgeTimeout=null;
+  function showJudgement(text,color){
+    judgementEl.textContent = text;
+    judgementEl.style.color = color;
+    judgementEl.style.opacity = '1';
+    judgementEl.style.transform = 'translate(-50%,-50%) scale(1.15)';
+    clearTimeout(judgeTimeout);
+    judgeTimeout = setTimeout(()=>{
+      judgementEl.style.opacity='0';
+      judgementEl.style.transform='translate(-50%,-50%) scale(1)';
+    }, 260);
+  }
+
+  function updateHud(){
+    scoreValue.textContent = score.toLocaleString('pt-BR');
+    comboValue.textContent = combo + 'x';
+    comboValue.style.opacity = combo>0 ? '1':'0';
+    const totalNotes = perfectCount+goodCount+missCount;
+    const acc = totalNotes>0 ? Math.round(((perfectCount + goodCount*0.6)/totalNotes)*100) : 100;
+    accValue.textContent = acc + '%';
+    rockFill.style.width = Math.round(rock*100) + '%';
+  }
+
+  window.addEventListener('keydown', (e)=>{
+    if (e.repeat) return;
+    const k = e.key.toLowerCase();
+    const idx = laneIndexForKey(k === ' ' ? ' ' : k);
+    if (idx !== -1) {
+      e.preventDefault();
+      handleHit(idx);
+    }
+    if (k === 'escape' && running) togglePause();
+  });
+
+  // suporte a toque (mobile): botões invisíveis nas faixas na parte inferior
+  canvas.addEventListener('pointerdown', (e)=>{
+    if (!running || paused) return;
+    const g = laneGeometry();
+    const rect = canvas.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const n = LANES.length;
+    const bottomLaneW = g.bottomW/n;
+    let idx = Math.floor((x - g.bottomX)/bottomLaneW);
+    idx = Math.max(0, Math.min(n-1, idx));
+    handleHit(idx);
+  });
+
+  /* ---------------- Pausa / navegação ---------------- */
+  function togglePause(){
+    paused = !paused;
+    if (paused) {
+      switchScreen('pause', true);
+      if (audioCtx) audioCtx.suspend();
+    } else {
+      switchScreen('game');
+      if (audioCtx) audioCtx.resume();
+      startTime = performance.now()/1000 - elapsed;
+      loop();
+    }
+  }
+
+  function endGame(){
+    running = false;
+    stopBackground();
+    const totalNotes = perfectCount+goodCount+missCount;
+    const acc = totalNotes>0 ? Math.round(((perfectCount + goodCount*0.6)/totalNotes)*100) : 100;
+
+    document.getElementById('resSong').textContent = selectedSong.title + ' · ' + DIFFS[selectedDiff].label;
+    document.getElementById('resultScore').textContent = score.toLocaleString('pt-BR');
+    document.getElementById('resPerfect').textContent = perfectCount;
+    document.getElementById('resGood').textContent = goodCount;
+    document.getElementById('resMiss').textContent = missCount;
+    document.getElementById('resCombo').textContent = maxCombo;
+    document.getElementById('resAcc').textContent = acc + '%';
+
+    const gradeEl = document.getElementById('grade');
+    let grade='C', color='#8a8a9e';
+    if (acc>=95){grade='S';color='#3ddc84';}
+    else if (acc>=85){grade='A';color='#4da6ff';}
+    else if (acc>=70){grade='B';color='#ffd93d';}
+    else if (acc>=50){grade='C';color='#ff9f45';}
+    else {grade='D';color='#ff4d5e';}
+    gradeEl.textContent = grade;
+    gradeEl.style.background = hexAlpha(color,0.18);
+    gradeEl.style.color = color;
+    gradeEl.style.boxShadow = `inset 0 0 0 2px ${color}`;
+
+    switchScreen('result');
+  }
+
+  function switchScreen(name, keepGameVisible){
+    menuScreen.classList.remove('active');
+    resultScreen.classList.remove('active');
+    pauseScreen.classList.remove('active');
+    gameScreen.classList.remove('active');
+    if (name==='menu') menuScreen.classList.add('active');
+    if (name==='game') gameScreen.classList.add('active');
+    if (name==='pause') { gameScreen.classList.add('active'); pauseScreen.classList.add('active'); }
+    if (name==='result') resultScreen.classList.add('active');
+  }
+
+  /* ---------------- Ligações de botões ---------------- */
+  document.getElementById('playBtn').addEventListener('click', startGame);
+  document.getElementById('pauseBtn').addEventListener('click', togglePause);
+  document.getElementById('resumeBtn').addEventListener('click', togglePause);
+  document.getElementById('quitBtn').addEventListener('click', ()=>{
+    running=false; paused=false; stopBackground();
+    if (rafId) cancelAnimationFrame(rafId);
+    switchScreen('menu');
+  });
+  document.getElementById('retryBtn').addEventListener('click', startGame);
+  document.getElementById('menuBtn').addEventListener('click', ()=> switchScreen('menu'));
+
+  resizeCanvas();
+})();
+</script>
 </body>
 </html>
