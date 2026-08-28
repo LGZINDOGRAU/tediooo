@@ -1,100 +1,138 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rhythm Hero | Criado por Luis</title>
-  <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Hero</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #111;
+            color: white;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 20px;
+        }
+        #gameArea {
+            position: relative;
+        }
+        canvas {
+            background-color: #222;
+            border: 2px solid #555;
+            box-shadow: 0 0 20px rgba(0, 255, 255, 0.2);
+        }
+        #scoreBoard {
+            font-size: 24px;
+            margin-bottom: 10px;
+            font-weight: bold;
+            color: #0ff;
+        }
+        .controls {
+            margin-top: 10px;
+            color: #aaa;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="scoreBoard">Pontuação: <span id="score">0</span></div>
     
-    body {
-      background: radial-gradient(circle at center, #1a0b2e 0%, #090314 100%);
-      color: #fff;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      overflow: hidden;
-    }
+    <div id="gameArea">
+        <canvas id="gameCanvas" width="400" height="600"></canvas>
+    </div>
 
-    .header-title {
-      font-size: 2.2rem;
-      font-weight: 900;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-      background: linear-gradient(90deg, #ff007f, #00f0ff);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      text-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
-    }
+    <div class="controls">
+        Use as teclas: <strong>A</strong> (Verde), <strong>S</strong> (Vermelho), <strong>D</strong> (Amarelo), <strong>F</strong> (Azul)
+    </div>
 
-    .author-badge {
-      font-size: 0.85rem;
-      color: #00f0ff;
-      letter-spacing: 2px;
-      font-weight: bold;
-      margin-bottom: 12px;
-    }
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const scoreElement = document.getElementById('score');
 
-    .controls-panel {
-      margin-bottom: 15px;
-      display: flex;
-      gap: 10px;
-      align-items: center;
-    }
+        let score = 0;
+        let notes = [];
+        const keys = ['a', 's', 'd', 'f'];
+        const colors = ['#00ff00', '#ff0000', '#ffff00', '#0000ff'];
+        const laneWidth = canvas.width / 4;
+        const hitZoneY = 500;
+        const hitZoneHeight = 40;
 
-    select, button {
-      padding: 10px 20px;
-      font-size: 1rem;
-      font-weight: bold;
-      border-radius: 8px;
-      border: none;
-      cursor: pointer;
-      outline: none;
-    }
+        // Função para criar notas aleatórias
+        function spawnNote() {
+            const lane = Math.floor(Math.random() * 4);
+            notes.push({
+                x: lane * laneWidth,
+                y: -50,
+                color: colors[lane],
+                lane: lane,
+                speed: 4 + (score * 0.05) // Fica mais rápido com o tempo
+            });
+        }
 
-    select {
-      background: #25123e;
-      color: #00f0ff;
-      border: 1px solid #00f0ff;
-    }
+        // Loop principal do jogo
+        function updateGame() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    button {
-      background: linear-gradient(45deg, #ff007f, #7928ca);
-      color: #fff;
-      box-shadow: 0 0 15px rgba(255, 0, 127, 0.6);
-      transition: all 0.2s;
-    }
+            // Desenhar linha de acerto (Hit Zone)
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.fillRect(0, hitZoneY, canvas.width, hitZoneHeight);
+            ctx.strokeStyle = '#fff';
+            ctx.strokeRect(0, hitZoneY, canvas.width, hitZoneHeight);
 
-    button:hover {
-      transform: scale(1.08);
-      box-shadow: 0 0 25px rgba(255, 0, 127, 0.9);
-    }
+            // Atualizar e desenhar notas
+            for (let i = notes.length - 1; i >= 0; i--) {
+                let note = notes[i];
+                note.y += note.speed;
 
-    .hud {
-      display: flex;
-      gap: 12px;
-      font-size: 1rem;
-      font-weight: bold;
-      margin-bottom: 15px;
-    }
+                // Desenhar a nota
+                ctx.fillStyle = note.color;
+                ctx.beginPath();
+                ctx.arc(note.x + laneWidth / 2, note.y, 20, 0, Math.PI * 2);
+                ctx.fill();
 
-    .hud-box {
-      background: rgba(255, 255, 255, 0.05);
-      backdrop-filter: blur(10px);
-      padding: 8px 16px;
-      border-radius: 12px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
-    }
+                // Remover nota se passar da tela (errou)
+                if (note.y > canvas.height) {
+                    notes.splice(i, 1);
+                    score = Math.max(0, score - 5); // Perde ponto
+                    scoreElement.innerText = score;
+                }
+            }
 
-    #game-container {
-      position: relative;
-      width: 320px;
-      height: 480px;
-      background: linear-gradient(180deg, #090314 0%, #15092b 100%);
-      border: 3px solid #00f0ff;
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 0 3
+            requestAnimationFrame(updateGame);
+        }
+
+        // Detectar teclas pressionadas
+        window.addEventListener('keydown', (e) => {
+            const keyIndex = keys.indexOf(e.key.toLowerCase());
+            
+            if (keyIndex !== -1) {
+                // Efeito visual ao apertar a tecla
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.fillRect(keyIndex * laneWidth, hitZoneY, laneWidth, hitZoneHeight);
+
+                // Checar acerto
+                for (let i = 0; i < notes.length; i++) {
+                    let note = notes[i];
+                    if (note.lane === keyIndex && note.y > hitZoneY - 20 && note.y < hitZoneY + hitZoneHeight) {
+                        notes.splice(i, 1); // Acertou, remove a nota
+                        score += 10;
+                        scoreElement.innerText = score;
+                        break; 
+                    }
+                }
+            }
+        });
+
+        // Iniciar o jogo
+        setInterval(spawnNote, 800); // Cria uma nota a cada 800ms
+        updateGame();
+
+        // Dica de Áudio (Para adicionar sua música depois)
+        // const musica = new Audio('sua_musica.mp3');
+        // musica.play();
+    </script>
+</body>
+</html>
