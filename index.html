@@ -3,61 +3,98 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rhythm Hero | Por [luis]</title>
+  <title>Rhythm Hero | Criado por Luis</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
-    body { background: #0f0f1a; color: #fff; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
-
-    #ui { margin-bottom: 15px; }
-    .hud { display: flex; gap: 20px; font-size: 1.2rem; font-weight: bold; margin-top: 10px; justify-content: center; }
-    .hud div { background: #1f1f3a; padding: 8px 16px; border-radius: 8px; border: 1px solid #333; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Trebuchet MS', 'Segoe UI', sans-serif; }
     
-    select, button { padding: 8px 16px; font-size: 1rem; font-weight: bold; border-radius: 6px; border: none; cursor: pointer; margin: 5px; }
-    select { background: #2a2a4a; color: #fff; }
-    button { background: #00e676; color: #000; transition: transform 0.1s; }
-    button:hover { transform: scale(1.05); }
+    body {
+      background: radial-gradient(circle at center, #1a0b2e 0%, #090314 100%);
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      overflow: hidden;
+    }
 
-    #game-container { position: relative; width: 320px; height: 500px; background: #161625; border: 3px solid #333; border-radius: 12px; overflow: hidden; box-shadow: 0 0 30px rgba(0,255,200,0.1); }
-    
-    .lane { position: absolute; top: 0; width: 25%; height: 100%; border-right: 1px dashed rgba(255,255,255,0.1); }
-    .lane:nth-child(1) { left: 0%; background: rgba(255, 82, 82, 0.05); }
-    .lane:nth-child(2) { left: 25%; background: rgba(255, 177, 66, 0.05); }
-    .lane:nth-child(3) { left: 50%; background: rgba(46, 213, 115, 0.05); }
-    .lane:nth-child(4) { left: 75%; background: rgba(30, 144, 255, 0.05); border-right: none; }
+    .header-title {
+      font-size: 2.2rem;
+      font-weight: 900;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      background: linear-gradient(90deg, #ff007f, #00f0ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 0 20px rgba(0, 240, 255, 0.4);
+    }
 
-    .hit-zone { position: absolute; bottom: 30px; width: 100%; height: 50px; border-top: 2px solid #555; border-bottom: 2px solid #555; background: rgba(255,255,255,0.05); }
+    .author-badge {
+      font-size: 0.85rem;
+      color: #00f0ff;
+      letter-spacing: 2px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
 
-    .target-key { position: absolute; bottom: 33px; width: 60px; height: 44px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 1.2rem; border: 2px solid #fff; }
-    .k-0 { left: 10px; border-color: #ff5252; color: #ff5252; }
-    .k-1 { left: 90px; border-color: #ffb142; color: #ffb142; }
-    .k-2 { left: 170px; border-color: #2ed573; color: #2ed573; }
-    .k-3 { left: 250px; border-color: #1e90ff; color: #1e90ff; }
-    .target-key.active { background: white; color: black; }
+    .controls-panel {
+      margin-bottom: 15px;
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
 
-    .note { position: absolute; width: 60px; height: 24px; border-radius: 6px; box-shadow: 0 0 10px currentColor; }
-    .n-0 { background: #ff5252; color: #ff5252; left: 10px; }
-    .n-1 { background: #ffb142; color: #ffb142; left: 90px; }
-    .n-2 { background: #2ed573; color: #2ed573; left: 170px; }
-    .n-3 { background: #1e90ff; color: #1e90ff; left: 250px; }
-  </style>
-</head>
-<body>
-  <footer style="margin-top: 20px; font-size: 0.85rem; opacity: 0.7;">
-  Desenvolvido por <strong>[Seu Nome]</strong>
-</footer>
+    select, button {
+      padding: 10px 20px;
+      font-size: 1rem;
+      font-weight: bold;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      outline: none;
+    }
 
-  <div id="ui">
-    <h1>RHYTHM HERO</h1>
-    <p style="color: #00e676; font-weight: bold; margin-bottom: 10px;">Criado por { Luis]</p>
-    <div style="margin-top: 10px;">
-      <select id="songSelect">
-        <option value="synth">Música 1: Eletrônica (Fácil)</option>
-        <option value="rock">Música 2: Rock Beat (Médio)</option>
-        <option value="speed">Música 3: Speed Run (Difícil)</option>
-      </select>
-      <button onclick="startGame()">JOGAR</button>
-    </div><div class="hud">
-  <div>JOGADOR: <span style="color: #00e676;">[luis]</span></div>
-  <div>PONTOS: <span id="score">0</span></div>
-  <div>COMBO: <span id="combo">0</span>x</div>
-</div>
+    select {
+      background: #25123e;
+      color: #00f0ff;
+      border: 1px solid #00f0ff;
+    }
+
+    button {
+      background: linear-gradient(45deg, #ff007f, #7928ca);
+      color: #fff;
+      box-shadow: 0 0 15px rgba(255, 0, 127, 0.6);
+      transition: all 0.2s;
+    }
+
+    button:hover {
+      transform: scale(1.08);
+      box-shadow: 0 0 25px rgba(255, 0, 127, 0.9);
+    }
+
+    .hud {
+      display: flex;
+      gap: 12px;
+      font-size: 1rem;
+      font-weight: bold;
+      margin-bottom: 15px;
+    }
+
+    .hud-box {
+      background: rgba(255, 255, 255, 0.05);
+      backdrop-filter: blur(10px);
+      padding: 8px 16px;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+    }
+
+    #game-container {
+      position: relative;
+      width: 320px;
+      height: 480px;
+      background: linear-gradient(180deg, #090314 0%, #15092b 100%);
+      border: 3px solid #00f0ff;
+      border-radius: 16px;
+      overflow: hidden;
+      box-shadow: 0 0 3
