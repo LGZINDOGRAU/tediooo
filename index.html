@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rhythm Hero Mini</title>
+  <title>Rhythm Hero | Por [luis]</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; }
     body { background: #0f0f1a; color: #fff; text-align: center; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; overflow: hidden; }
@@ -42,9 +42,13 @@
   </style>
 </head>
 <body>
+  <footer style="margin-top: 20px; font-size: 0.85rem; opacity: 0.7;">
+  Desenvolvido por <strong>[Seu Nome]</strong>
+</footer>
 
   <div id="ui">
     <h1>RHYTHM HERO</h1>
+    <p style="color: #00e676; font-weight: bold; margin-bottom: 10px;">Criado por { Luis]</p>
     <div style="margin-top: 10px;">
       <select id="songSelect">
         <option value="synth">Música 1: Eletrônica (Fácil)</option>
@@ -52,4 +56,8 @@
         <option value="speed">Música 3: Speed Run (Difícil)</option>
       </select>
       <button onclick="startGame()">JOGAR</button>
-    </div>
+    </div><div class="hud">
+  <div>JOGADOR: <span style="color: #00e676;">[luis]</span></div>
+  <div>PONTOS: <span id="score">0</span></div>
+  <div>COMBO: <span id="combo">0</span>x</div>
+</div>
